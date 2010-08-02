@@ -13,6 +13,8 @@ gem 'dm-observer',          dm_version
 gem 'dm-do-adapter',        dm_version
 gem 'dm-sqlite-adapter',    dm_version
 
+gem 'rake'
+
 group(:test) do
   gem 'rspec',              '~>1.3.0'
   gem 'ruby-debug'

@@ -8,6 +8,10 @@ dependencies:
     group: 
     - :default
     version: ~> 1.0.0
+  rake: 
+    group: 
+    - :default
+    version: ">= 0"
   rspec: 
     group: 
     - :test
@@ -16,11 +20,11 @@ dependencies:
     group: 
     - :default
     version: ~> 1.0.0
-  dm-timestamps: 
+  dm-core: 
     group: 
     - :default
     version: ~> 1.0.0
-  dm-core: 
+  dm-timestamps: 
     group: 
     - :default
     version: ~> 1.0.0
@@ -28,11 +32,11 @@ dependencies:
     group: 
     - :default
     version: ~> 1.0.0
-  dm-transactions: 
+  dm-sqlite-adapter: 
     group: 
     - :default
     version: ~> 1.0.0
-  dm-sqlite-adapter: 
+  dm-transactions: 
     group: 
     - :default
     version: ~> 1.0.0
@@ -40,15 +44,17 @@ dependencies:
     group: 
     - :test
     version: ~> 1.0.0
-  dm-constraints: 
-    group: 
-    - :default
-    version: ~> 1.0.0
   dm-migrations: 
     group: 
     - :default
     version: ~> 1.0.0
+  dm-constraints: 
+    group: 
+    - :default
+    version: ~> 1.0.0
 specs: 
+- rake: 
+    version: 0.8.7
 - ZenTest: 
     version: 4.3.3
 - RubyInline: 
@@ -97,7 +103,7 @@ specs:
     version: 0.10.3
 - ruby-debug: 
     version: 0.10.3
-hash: 56806c46fdbf8cf098d6aea62fa326f4224c2f69
+hash: 28e9795f5bba89a00767dc455d05edf5ce70e23a
 sources: 
 - Rubygems: 
     uri: http://gemcutter.org
