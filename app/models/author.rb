@@ -22,6 +22,16 @@ class Author
     with.add_collaboration(self, on)
   end
 
+  def path_to_origin
+    if distance == 0
+      []
+    elsif pred = predecessor
+      [[projects_for(pred).first, pred]] + pred.path_to_origin
+    else
+      []
+    end
+  end
+
   protected
 
   def add_collaboration(other, project)
@@ -36,6 +46,19 @@ class Author
     c = Collaboration.first_or_create(:source => self, :target => other, :project => project)
     c.valid? or raise "FAIL: #{c.errors.inspect}"
     c
+  end
+
+  def projects_for(other)
+    return nil unless other
+    self.collaborations(:target => other).projects
+  end
+
+  def nearer_neighbors
+    neighbors.all(:distance => self.distance - 1)
+  end
+
+  def predecessor
+    nearer_neighbors.first
   end
 
   def further_neighbors

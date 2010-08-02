@@ -38,10 +38,11 @@ describe Author do
     @albert = described_class.gen(:github_username => 'Albert')
     @bob    = described_class.gen(:github_username => 'Bob')
 
-    @alice_project = Project.gen
+    @alice_project  = Project.gen(:name => 'alice-project')
+    @brenda_project = Project.gen(:name => 'brenda-project')
 
     @alice.worked( :with => @wycats, :on => @alice_project)
-    @brenda.worked(:with => @alice,  :on => Project.gen)
+    @brenda.worked(:with => @alice,  :on => @brenda_project)
     @albert.worked(:with => @wycats, :on => Project.gen)
     @bob.worked(   :with => @albert, :on => Project.gen)
   end
@@ -79,7 +80,22 @@ describe Author do
         @alice.worked(:with => @wycats, :on => @alice_project)
       }.should_not change(Collaboration, :count)
     end
-
   end
 
+  describe "#path_to_origin" do
+    it "is a list of [project, author] pairs leading to the source" do
+      @brenda.path_to_origin.should == [
+        [@brenda_project, @alice],
+        [@alice_project, @wycats],
+      ]
+    end
+
+    it "is empty for the source" do
+      @wycats.path_to_origin.should == []
+    end
+
+    it "is empty for unconnected authors" do
+      Author.gen.path_to_origin.should == []
+    end
+  end
 end
