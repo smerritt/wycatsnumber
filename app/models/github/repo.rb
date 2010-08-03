@@ -21,6 +21,7 @@ module Github
       @commits = []
       while(page) do
         begin
+          # puts "fetching page #{page}"
           response = RestClient.get(
             "http://github.com/api/v2/json/commits/list/#{name}/master?page=#{page}"
             )
@@ -28,6 +29,10 @@ module Github
           page += 1
         rescue RestClient::ResourceNotFound
           page = nil
+        rescue RestClient::Unauthorized, Errno::ETIMEDOUT => e
+          # puts "Got #{e.inspect}; going to retry"
+          sleep 5
+          retry
         end
       end
 

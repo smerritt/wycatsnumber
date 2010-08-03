@@ -252,30 +252,66 @@ describe "Github::Repo#users" do
     FakeWeb.register_uri(:get,
       'http://github.com/api/v2/json/commits/list/wycats/thor/master?page=2',
       :body => commits_page2.to_json)
-    FakeWeb.register_uri(:get,
-      'http://github.com/api/v2/json/commits/list/wycats/thor/master?page=3',
-      :body => {"error" => "Not Found"}.to_json,
-      :status => ["404", "Not Found"])
 
     @repo = Github::Repo.new('wycats/thor')
   end
 
-  it "finds users from the first page of results" do
-    @repo.users.should include(Github::User.new('josevalim'))
-    @repo.users.should include(Github::User.new('seeflanigan'))
+  context "smooth sailing" do
+    before(:each) do
+      FakeWeb.register_uri(:get,
+        'http://github.com/api/v2/json/commits/list/wycats/thor/master?page=3',
+        :body => {"error" => "Not Found"}.to_json,
+        :status => ["404", "Not Found"])
+    end
+
+    it "finds users from the first page of results" do
+      @repo.users.should include(Github::User.new('josevalim'))
+      @repo.users.should include(Github::User.new('seeflanigan'))
+    end
+
+    it "finds users from subsequent pages of results" do
+      @repo.users.should include(Github::User.new('joshbuddy'))
+    end
+
+    it "ignores commits by people without github logins" do
+      @repo.users.should_not include(Github::User.new(''))
+    end
+
+    it "filters out duplicates" do
+      @repo.users.find_all do |user|
+        user.name == 'josevalim'
+      end.size.should == 1
+    end
+
+    it "retries on 500 (that's Github's rate limiter's way of saying 'screw you, buddy')" do
+      exceptions = [RestClient::Unauthorized.new, RestClient::ResourceNotFound.new]
+    end
   end
 
-  it "finds users from subsequent pages of results" do
-    @repo.users.should include(Github::User.new('joshbuddy'))
-  end
+  context "when the rate limiter or other gremlin strikes" do
+    before(:each) do
+      FakeWeb.register_uri(:get,
+        'http://github.com/api/v2/json/commits/list/wycats/thor/master?page=3',
+        [{
+            :body => {"error" => "Unauthorized"}.to_json, # guessing
+            :status => ["401", "Unauthorized"],
+          }, {
+            :exception => Errno::ETIMEDOUT,
+          }, {
+            :body => {"error" => "Not Found"}.to_json,
+            :status => ["404", "Not Found"],
+          }])
+    end
 
-  it "ignores commits by people without github logins" do
-    @repo.users.should_not include(Github::User.new(''))
-  end
+    before(:each) do
+      class << @repo
+        def sleep(*) nil end  # there's no need to really sleep in tests
+      end
+    end
 
-  it "filters out duplicates" do
-    @repo.users.find_all do |user|
-      user.name == 'josevalim'
-    end.size.should == 1
+    it "retries until it succeeds" do
+      lambda { @repo.users }.should_not raise_error
+    end
+
   end
 end
