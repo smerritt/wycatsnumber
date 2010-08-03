@@ -13,3 +13,4 @@ Spec::Runner.configure do |config|
 end
 
 DataMapper.auto_migrate!
+FakeWeb.allow_net_connect = false
