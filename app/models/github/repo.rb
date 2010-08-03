@@ -4,7 +4,7 @@ module Github
     alias :fork? :fork
 
     def users
-      commits.map do |commit|
+      @users ||= commits.map do |commit|
         commit["author"]["login"]
       end.find_all do |github_username|
         github_username && github_username.length > 0
