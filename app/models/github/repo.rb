@@ -3,7 +3,7 @@ module Github
 
     alias :fork? :fork
 
-    def committers
+    def users
       commits.map do |commit|
         commit["author"]["login"]
       end.find_all do |github_username|

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 require File.expand_path('../../../spec_helper', __FILE__)
 
-describe "Github::Repo#committers" do
+describe "Github::Repo#users" do
   before(:each) do
 
     # trimmed for conciseness (such as it is)
@@ -260,21 +260,21 @@ describe "Github::Repo#committers" do
     @repo = Github::Repo.new('wycats/thor')
   end
 
-  it "finds committers from the first page of results" do
-    @repo.committers.should include(Github::User.new('josevalim'))
-    @repo.committers.should include(Github::User.new('seeflanigan'))
+  it "finds users from the first page of results" do
+    @repo.users.should include(Github::User.new('josevalim'))
+    @repo.users.should include(Github::User.new('seeflanigan'))
   end
 
-  it "finds committers from subsequent pages of results" do
-    @repo.committers.should include(Github::User.new('joshbuddy'))
+  it "finds users from subsequent pages of results" do
+    @repo.users.should include(Github::User.new('joshbuddy'))
   end
 
   it "ignores commits by people without github logins" do
-    @repo.committers.should_not include(Github::User.new(''))
+    @repo.users.should_not include(Github::User.new(''))
   end
 
   it "filters out duplicates" do
-    @repo.committers.find_all do |user|
+    @repo.users.find_all do |user|
       user.name == 'josevalim'
     end.size.should == 1
   end
