@@ -20,6 +20,8 @@ module Github
       page = 1
       @commits = []
       while(page) do
+        retry_count = 0
+
         begin
           # puts "fetching page #{page}"
           response = RestClient.get(
@@ -30,7 +32,11 @@ module Github
         rescue RestClient::ResourceNotFound
           page = nil
         rescue RestClient::Unauthorized, Errno::ETIMEDOUT => e
+          if retry_count > 100
+            raise e
+          end
           # puts "Got #{e.inspect}; going to retry"
+          retry_count += 1
           sleep 5
           retry
         end

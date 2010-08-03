@@ -290,27 +290,44 @@ describe "Github::Repo#users" do
 
   context "when the rate limiter or other gremlin strikes" do
     before(:each) do
-      FakeWeb.register_uri(:get,
-        'http://github.com/api/v2/json/commits/list/wycats/thor/master?page=3',
-        [{
-            :body => {"error" => "Unauthorized"}.to_json, # guessing
-            :status => ["401", "Unauthorized"],
-          }, {
-            :exception => Errno::ETIMEDOUT,
-          }, {
-            :body => {"error" => "Not Found"}.to_json,
-            :status => ["404", "Not Found"],
-          }])
-    end
-
-    before(:each) do
       class << @repo
         def sleep(*) nil end  # there's no need to really sleep in tests
       end
     end
 
-    it "retries until it succeeds" do
-      lambda { @repo.users }.should_not raise_error
+    context "a finite number of times" do
+      before(:each) do
+        FakeWeb.register_uri(:get,
+          'http://github.com/api/v2/json/commits/list/wycats/thor/master?page=3',
+          [{
+              :body => {"error" => "Unauthorized"}.to_json, # guessing
+              :status => ["401", "Unauthorized"],
+            }, {
+              :exception => Errno::ETIMEDOUT,
+            }, {
+              :body => {"error" => "Not Found"}.to_json,
+              :status => ["404", "Not Found"],
+            }])
+      end
+
+      it "retries some times" do
+        lambda { @repo.users }.should_not raise_error
+      end
+    end
+
+    context "an infinite number of times" do
+      before(:each) do
+        FakeWeb.register_uri(:get,
+          'http://github.com/api/v2/json/commits/list/wycats/thor/master?page=3',
+          [{
+              :body => {"error" => "Unauthorized"}.to_json, # guessing
+              :status => ["401", "Unauthorized"],
+            }])
+      end
+
+      it "gives up eventually" do
+        lambda { @repo.users }.should raise_error(RestClient::Unauthorized)
+      end
     end
 
   end

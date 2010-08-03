@@ -10,6 +10,8 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 
 Spec::Runner.configure do |config|
   config.include WN::TransactionalRunner
+
+  config.after(:each) { FakeWeb.clean_registry }
 end
 
 DataMapper.auto_migrate!
