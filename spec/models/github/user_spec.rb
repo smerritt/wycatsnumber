@@ -4,7 +4,7 @@ describe Github::User do
   before(:each) do
     # NB: repos/show/:user doesn't paginate
 
-    repo_data = {
+    @repo_data = {
       "repositories" => [
         {
           "name" => "spiffy-elisp",
@@ -128,12 +128,16 @@ describe Github::User do
       ]
     }
 
-    FakeWeb.register_uri(:get,
-      'http://github.com/api/v2/json/repos/show/smerritt',
-      :body => repo_data.to_json)
   end
 
   context "#repos" do
+    before(:each) do
+      FakeWeb.register_uri(:get,
+        'http://github.com/api/v2/json/repos/show/smerritt',
+        :body => @repo_data.to_json)
+
+    end
+
     it "returns a list of the user's repos" do
       user = Github::User.new('smerritt')
       user.repos.should == [
@@ -155,6 +159,30 @@ describe Github::User do
 
       thor.should be_fork
       rackapp.should_not be_fork
+    end
+  end
+
+  context "#repos with network gremlins" do
+    before(:each) do
+      @user = Github::User.new('smerritt')
+      class << @user
+        def sleep(*) nil end
+      end
+    end
+
+    it "retries until it gets data" do
+      FakeWeb.register_uri(:get,
+        'http://github.com/api/v2/json/repos/show/smerritt',
+        [{
+            :body => {"error" => "Unauthorized"}.to_json, # guessing
+            :status => ["401", "Unauthorized"],
+          }, {
+            :exception => Errno::ETIMEDOUT,
+          }, {
+            :body => @repo_data.to_json
+          }])
+
+      @user.repos.should_not be_empty
     end
   end
 end
