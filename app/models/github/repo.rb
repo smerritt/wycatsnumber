@@ -14,6 +14,7 @@ module Github
     end
 
     private
+
     def commits
       return @commits if @commits
 
@@ -37,12 +38,16 @@ module Github
           end
           # puts "Got #{e.inspect}; going to retry"
           retry_count += 1
-          sleep 5
+          sleep sleep_time(retry_count)
           retry
         end
       end
 
       @commits
+    end
+
+    def sleep_time(retries)
+      rand(2**[10,retries].min)
     end
 
   end
