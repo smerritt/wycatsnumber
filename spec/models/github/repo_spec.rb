@@ -295,7 +295,7 @@ describe "Github::Repo#users" do
       end
     end
 
-    context "a finite number of times" do
+    context "a small number of times" do
       before(:each) do
         FakeWeb.register_uri(:get,
           'http://github.com/api/v2/json/commits/list/wycats/thor/master?page=3',
@@ -315,7 +315,7 @@ describe "Github::Repo#users" do
       end
     end
 
-    context "an infinite number of times" do
+    context "a large number of times" do
       before(:each) do
         FakeWeb.register_uri(:get,
           'http://github.com/api/v2/json/commits/list/wycats/thor/master?page=3',
