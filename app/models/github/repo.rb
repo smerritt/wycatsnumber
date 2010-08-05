@@ -4,33 +4,22 @@ module Github
     alias :fork? :fork
 
     def users
-      @users ||= commits.map do |commit|
-        commit["author"]["login"]
-      end.find_all do |github_username|
-        github_username && github_username.length > 0
-      end.uniq.map do |github_username|
+      @users ||= contributors_data.map do |contributor|
+        contributor["login"]
+      end.map do |github_username|
         Github::User.new(github_username)
       end
     end
 
     private
 
-    def commits
-      return @commits if @commits
-
-      page = 1
-      @commits = []
-      while response = fetch_and_retry(commits_page(page)) do
-        @commits += JSON.parse(response.body)["commits"]
-        page += 1
-      end
-
-      @commits
+    def contributors_data
+      response = fetch_and_retry(contributors_url)
+      JSON.parse(response.body)["contributors"]
     end
 
-    def commits_page(page)
-      # puts "fetching page #{page}"
-      "http://github.com/api/v2/json/commits/list/#{name}/master?page=#{page}"
+    def contributors_url
+      "http://github.com/api/v2/json/repos/show/#{name}/contributors"
     end
 
     def fetch_and_retry(url)

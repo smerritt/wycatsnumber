@@ -5,253 +5,249 @@ describe "Github::Repo#users" do
   before(:each) do
 
     # trimmed for conciseness (such as it is)
-    commits_page1 = {
-      "commits" => [
+    @contributors = {
+      "contributors" => [
         {
-          "author" => {
-            "name" => "Carlhuda",
-            "login" => "",
-            "email" => "carlhuda@engineyard.com"
-          },
-          "parents" => [
-            {
-              "id" => "60fb50f45bab346dda618fe623cfad5bf86c1e1f"
-            }
-          ],
-          "url" => "http://github.com/wycats/thor/commit/e7f1e5835638af5c635fb4d538222fa9925eebc9",
-          "id" => "e7f1e5835638af5c635fb4d538222fa9925eebc9",
-          "committed_date" => "2010-08-02T16:26:09-07:00",
-          "authored_date" => "2010-08-02T16:26:09-07:00",
-          "message" => "common.jos√©",
-          "committer" => {
-            "name" => "Carlhuda",
-            "login" => "",
-            "email" => "carlhuda@engineyard.com"
-          },
-          "tree" => "f88fb85888911eea13d7aed55b7bfb5249e43576"
+          "name" => "Jos√© Valim",
+          "gravatar_id" => "e837f6b7fd146ab16ed3d663476c063e",
+          "company" => "Plataforma",
+          "location" => "S√£o Paulo/Brasil, Krak√≥w/Polska",
+          "blog" => "http://blog.plataformatec.com.br/",
+          "contributions" => 410,
+          "type" => "User",
+          "login" => "josevalim",
+          "email" => "jose.valim@plataformatec.com.br"
         },
         {
-          "author" => {
-            "name" => "Jos√© Valim",
-            "login" => "josevalim",
-            "email" => "jose.valim@gmail.com"
-          },
-          "parents" => [
-            {
-              "id" => "4647c98f0a8ec0a7db6a648588f0680df259803e"
-            }
-          ],
-          "url" => "http://github.com/wycats/thor/commit/60fb50f45bab346dda618fe623cfad5bf86c1e1f",
-          "id" => "60fb50f45bab346dda618fe623cfad5bf86c1e1f",
-          "committed_date" => "2010-07-27T02:34:01-07:00",
-          "authored_date" => "2010-07-27T02:34:01-07:00",
-          "message" => "Improve docs on invoke.",
-          "committer" => {
-            "name" => "Jos√© Valim",
-            "login" => "josevalim",
-            "email" => "jose.valim@gmail.com"
-          },
-          "tree" => "8a63b78a2f52e73c07b552c3fe574cf582ae4ea0"
+          "name" => "Nathan Weizenbaum",
+          "gravatar_id" => "39b3031f890ad7ce40661614af8b52a6",
+          "company" => "",
+          "location" => "Seattle",
+          "blog" => "http://nex-3.com",
+          "contributions" => 87,
+          "type" => "User",
+          "login" => "nex3",
+          "email" => "nex342@gmail.com"
         },
         {
-          "author" => {
-            "name" => "Jos√© Valim",
-            "login" => "josevalim",
-            "email" => "jose.valim@gmail.com"
-          },
-          "parents" => [
-            {
-              "id" => "db85b667362c0e0a70ebce56d1dd89b0ebba904c"
-            }
-          ],
-          "url" => "http://github.com/wycats/thor/commit/4647c98f0a8ec0a7db6a648588f0680df259803e",
-          "id" => "4647c98f0a8ec0a7db6a648588f0680df259803e",
-          "committed_date" => "2010-07-26T02:34:13-07:00",
-          "authored_date" => "2010-07-26T02:34:13-07:00",
-          "message" => "Bump to 0.14.0.",
-          "committer" => {
-            "name" => "Jos√© Valim",
-            "login" => "josevalim",
-            "email" => "jose.valim@gmail.com"
-          },
-          "tree" => "6728dd3ac4ab8bc3c7ec8c025da408e0d8139e2b"
-        },
-        # ...
-        {
-          "author" => {
-            "name" => "Sam Merritt",
-            "login" => "smerritt",
-            "email" => "smerritt@engineyard.com"
-          },
-          "parents" => [
-            {
-              "id" => "e969b1403719794f249cadd09f0434f10da96517"
-            }
-          ],
-          "url" => "http://github.com/wycats/thor/commit/6aec03f46272eb4fc3a352a4607a21f9d69289d9",
-          "id" => "6aec03f46272eb4fc3a352a4607a21f9d69289d9",
-          "committed_date" => "2010-07-25T01:02:06-07:00",
-          "authored_date" => "2010-07-24T20:28:25-07:00",
-          "message" => "Make lazy_default work for all option types.",
-          "committer" => {
-            "name" => "Jos√© Valim",
-            "login" => "josevalim",
-            "email" => "jose.valim@gmail.com"
-          },
-          "tree" => "441f20cc1f868df1172cd5b3711a441062101e9f"
+          "name" => "Yehuda Katz",
+          "gravatar_id" => "428167a3ec72235ba971162924492609",
+          "company" => "Engine Yard",
+          "location" => "San Francisco",
+          "blog" => "http://www.yehudakatz.com",
+          "contributions" => 34,
+          "type" => "User",
+          "login" => "wycats",
+          "email" => "wycats@gmail.com"
         },
         {
-          "author" => {
-            "name" => "wycats",
-            "login" => "wycats",
-            "email" => "wycats@gmail.com"
-          },
-          "parents" => [
-            {
-              "id" => "3cf7db3435e5f7731a4db63aff2138be6148046b"
-            }
-          ],
-          "url" => "http://github.com/wycats/thor/commit/1543156fa82b4c3246dc4db792784ff3afb4c68a",
-          "id" => "1543156fa82b4c3246dc4db792784ff3afb4c68a",
-          "committed_date" => "2010-07-24T15:04:31-07:00",
-          "authored_date" => "2010-07-24T15:04:31-07:00",
-          "message" => "Allow with_padding with regular #say",
-          "committer" => {
-            "name" => "wycats",
-            "login" => "wycats",
-            "email" => "wycats@gmail.com"
-          },
-          "tree" => "c76d1d740c6b2031b70585103982761cfca724ca"
+          "name" => "Brian Donovan",
+          "gravatar_id" => "d62308e6f4a387595064a6df1cfff538",
+          "company" => "",
+          "location" => "San Francisco",
+          "blog" => "http://brian-donovan.com/",
+          "contributions" => 17,
+          "type" => "User",
+          "login" => "eventualbuddha"
         },
         {
-          "author" => {
-            "name" => "Cory Flanigan",
-            "login" => "seeflanigan",
-            "email" => "seeflanigan@gmail.com"
-          },
-          "parents" => [
-            {
-              "id" => "b087d7025c9df1d637be69226e16642b9ad0f354"
-            }
-          ],
-          "url" => "http://github.com/wycats/thor/commit/3cf7db3435e5f7731a4db63aff2138be6148046b",
-          "id" => "3cf7db3435e5f7731a4db63aff2138be6148046b",
-          "committed_date" => "2010-07-21T19:37:24-07:00",
-          "authored_date" => "2010-07-21T18:29:34-07:00",
-          "message" => "Minor documentation tweaks",
-          "committer" => {
-            "name" => "Brian Donovan",
-            "login" => "eventualbuddha",
-            "email" => "brian.donovan@gmail.com"
-          },
-          "tree" => "1b2383ea9c0bde3819ce1470c0383562df8d84ec"
+          "name" => "James Herdman",
+          "gravatar_id" => "90ebe8da17aabd36cc30d9f96a530e6f",
+          "location" => "Toronto, ON",
+          "blog" => "http://jherdman.github.com",
+          "contributions" => 15,
+          "type" => "User",
+          "login" => "jherdman",
+          "email" => "james.herdman@me.com"
         },
         {
-          "author" => {
-            "name" => "Dr Nic Williams",
-            "login" => "drnic",
-            "email" => "drnicwilliams@gmail.com"
-          },
-          "parents" => [
-            {
-              "id" => "5ff34ce76a32308c210d5a6f84d0377871825143"
-            }
-          ],
-          "url" => "http://github.com/wycats/thor/commit/6ac9473932b62ad0df5a754bcf886342b824d491",
-          "id" => "6ac9473932b62ad0df5a754bcf886342b824d491",
-          "committed_date" => "2010-06-23T16:36:16-07:00",
-          "authored_date" => "2010-06-20T18:28:50-07:00",
-          "message" => "Thor::Shell::HTML class (selectable by HTML env variable => ENV['THOR_SHELL'] = 'HTML') to output shell with HTML wrapper elements for color + bold",
-          "committer" => {
-            "name" => "Jos√© Valim",
-            "login" => "josevalim",
-            "email" => "jose.valim@gmail.com"
-          },
-          "tree" => "a482bc2a0e93d7b067f338c7e8b5b084435c1108"
+          "name" => "Mislav Marohniƒá",
+          "gravatar_id" => "8f93a872e399bc1353cc8d4e791d5401",
+          "company" => "Teambox",
+          "location" => "Barcelona",
+          "blog" => "http://mislav.uniqpath.com/",
+          "contributions" => 13,
+          "type" => "User",
+          "login" => "mislav",
+          "email" => "mislav.marohnic@gmail.com"
         },
+        {
+          "name" => "Fabien Franzen",
+          "gravatar_id" => "9871c515e1a284f2861f1d92645fd00a",
+          "location" => "Belgium",
+          "contributions" => 13,
+          "type" => "User",
+          "login" => "fabien",
+          "email" => "info@atelierfabien.be"
+        },
+        {
+          "name" => "Markus Prinz",
+          "gravatar_id" => "0176d9564601b43d75aff59f2cceed88",
+          "company" => "Soup.io",
+          "location" => "Austria",
+          "blog" => "http://blog.nuclearsquid.com/",
+          "contributions" => 12,
+          "type" => "User",
+          "login" => "cypher",
+          "email" => "markus.prinz@nuclearsquid.com"
+        },
+        {
+          "name" => "Andre Arko",
+          "gravatar_id" => "fb389f1e8b98d5d03be29e9dd309b3be",
+          "company" => "Plex",
+          "location" => "San Francisco",
+          "blog" => "http://arko.net",
+          "contributions" => 8,
+          "type" => "User",
+          "login" => "indirect",
+          "email" => "andre.arko@gmail.com"
+        },
+        {
+          "name" => "Sproutit/SproutCore",
+          "gravatar_id" => "c6b2ee26a74ce837d5973b81888d4ea8",
+          "location" => "Los Altos, CA",
+          "blog" => "http://www.sproutcore.com",
+          "contributions" => 8,
+          "type" => "Organization",
+          "login" => "sproutit",
+          "email" => "contact@sproutcore.com"
+        },
+        {
+          "name" => "Luis Lavena",
+          "gravatar_id" => "e7cff3cfd41c495e1012227d7dc24202",
+          "company" => "Multimedia systems",
+          "location" => "Tucuman, Argentina",
+          "blog" => "http://blog.mmediasys.com",
+          "contributions" => 7,
+          "type" => "User",
+          "login" => "luislavena",
+          "email" => "luislavena@gmail.com"
+        },
+        {
+          "name" => "Sam Merritt",
+          "gravatar_id" => "f31901d97286576f0d6a939309afabad",
+          "blog" => "http://torgomatic.blogspot.com/",
+          "contributions" => 4,
+          "type" => "User",
+          "login" => "smerritt",
+          "email" => ""
+        },
+        {
+          "name" => "Andy Delcambre",
+          "gravatar_id" => "548ebc3ff174526b6d10fb63f1b7f087",
+          "company" => "Engine Yard",
+          "location" => "San Francisco, CA",
+          "blog" => "http://andy.delcambre.com/",
+          "contributions" => 3,
+          "type" => "User",
+          "login" => "adelcambre",
+          "email" => "adelcambre@gmail.com"
+        },
+        {
+          "name" => "Cory Flanigan",
+          "gravatar_id" => "b0f73c0eb23d2569d806bebe728dbe83",
+          "location" => "Toledo, OH",
+          "blog" => "http://increaseyourgeek.wordpress.com/",
+          "contributions" => 3,
+          "type" => "User",
+          "login" => "seeflanigan",
+          "email" => "seeflanigan@gmail.com"
+        },
+        {
+          "name" => "Dr Nic Williams",
+          "gravatar_id" => "cb2b768a5e546b24052ea03334e43676",
+          "company" => "Mocra http://mocra.com",
+          "location" => "Brisbane, Australia",
+          "blog" => "http://drnicwilliams.com",
+          "contributions" => 3,
+          "type" => "User",
+          "login" => "drnic",
+          "email" => "drnicwilliams@gmail.com"
+        },
+        {
+          "name" => "Joshua Peek",
+          "gravatar_id" => "bbe5dc8dcf248706525ab76f46185520",
+          "company" => "37signals",
+          "location" => "Chicago, IL",
+          "blog" => "http://joshpeek.com/",
+          "contributions" => 3,
+          "type" => "User",
+          "login" => "josh",
+          "email" => "josh@joshpeek.com"
+        },
+        {
+          "name" => "Geoff Garside",
+          "gravatar_id" => "4dcfd2f7d671af330bcba3fe03277c71",
+          "company" => "M247 Ltd",
+          "location" => "Manchester, England",
+          "blog" => "http://geoffgarside.co.uk/",
+          "contributions" => 2,
+          "type" => "User",
+          "login" => "geoffgarside",
+          "email" => "geoff@geoffgarside.co.uk"
+        },
+        {
+          "name" => "jack dempsey",
+          "gravatar_id" => "1ccb5123d1af92e24b32cec62abcf9a8",
+          "company" => "Jack Dempsey LLC",
+          "location" => "Washington, DC",
+          "blog" => "http://jackndempsey.me",
+          "contributions" => 2,
+          "type" => "User",
+          "login" => "jackdempsey",
+          "email" => "jack.dempsey@gmail.com"
+        },
+        {
+          "gravatar_id" => "ae49abffb2729fcaa26577535b34fdc0",
+          "contributions" => 2,
+          "type" => "User",
+          "login" => "rheimbuch"
+        },
+        {
+          "gravatar_id" => "55d9de203647686bd5cc91b2c979c066",
+          "contributions" => 1,
+          "type" => "User",
+          "login" => "bappelt"
+        },
+        {
+          "name" => "Joshua Hull",
+          "gravatar_id" => "c7e2ce5b40f683dfb6c1bdf5e6af0c72",
+          "contributions" => 1,
+          "type" => "User",
+          "login" => "joshbuddy",
+          "email" => "joshbuddy@gmail.com"
+        },
+        {
+          "name" => "Damian Janowski",
+          "gravatar_id" => "ffd012d72e7f61639724878825ed25a3",
+          "company" => "Citrusbyte",
+          "location" => "Buenos Aires, Argentina",
+          "contributions" => 1,
+          "type" => "User",
+          "login" => "djanowski"
+        },
+        {
+          "name" => "Gabriel Horner",
+          "gravatar_id" => "8f0660cdc9f5d91c7d97456f8f0be8c7",
+          "company" => "self-employed",
+          "location" => "Gainesville, FL",
+          "blog" => "http://tagaholic.me",
+          "contributions" => 1,
+          "type" => "User",
+          "login" => "cldwalker"
+        },
+        {
+          "name" => "Tyler Hunt",
+          "gravatar_id" => "625cb1796316a98d3bbe205a040035c3",
+          "company" => "Devoh",
+          "location" => "Orlando, FL",
+          "blog" => "http://devoh.com/",
+          "contributions" => 1,
+          "type" => "User",
+          "login" => "tylerhunt"
+        }
       ]
     }
-
-    commits_page2 = {
-      "commits" => [
-        {
-          "author" => {
-            "name" => "Joshua Hull",
-            "login" => "joshbuddy",
-            "email" => "joshbuddy@gmail.com"
-          },
-          "parents" => [
-            {
-              "id" => "396c4a3e06c468dba02b33261ac64db14e1b5c3a"
-            }
-          ],
-          "url" => "http://github.com/wycats/thor/commit/473ea671bd33aab15685a42af5bf55a2a90c83a2",
-          "id" => "473ea671bd33aab15685a42af5bf55a2a90c83a2",
-          "committed_date" => "2010-05-20T09:43:09-07:00",
-          "authored_date" => "2010-05-18T19:14:14-07:00",
-          "message" => "Added long descriptions to tasks for more detailed help messages",
-          "committer" => {
-            "name" => "Andre Arko",
-            "login" => "indirect",
-            "email" => "andre@arko.net"
-          },
-          "tree" => "0e69752471d1f63a95ee9819bb4c2df563a5fa16"
-        },
-        {
-          "author" => {
-            "name" => "Brian Donovan",
-            "login" => "eventualbuddha",
-            "email" => "brian.donovan@gmail.com"
-          },
-          "parents" => [
-            {
-              "id" => "8c16b9115dd6501d2d5bfacad035c2ece949c4bb"
-            }
-          ],
-          "url" => "http://github.com/wycats/thor/commit/396c4a3e06c468dba02b33261ac64db14e1b5c3a",
-          "id" => "396c4a3e06c468dba02b33261ac64db14e1b5c3a",
-          "committed_date" => "2010-05-13T20:31:09-07:00",
-          "authored_date" => "2010-05-13T20:31:09-07:00",
-          "message" => "Provide some backtrace info when a thor file fails to load.\n\nBy default the first line will be sent to stderr. If the --debug flag is\npassed then the whole backtrace will be printed.",
-          "committer" => {
-            "name" => "Brian Donovan",
-            "login" => "eventualbuddha",
-            "email" => "brian.donovan@gmail.com"
-          },
-          "tree" => "288eff47854575b1111346318376cda24f4ac404"
-        },
-        {
-          "author" => {
-            "name" => "Jos√© Valim",
-            "login" => "josevalim",
-            "email" => "jose.valim@gmail.com"
-          },
-          "parents" => [
-            {
-              "id" => "dfd6b056a9f82c734ac16dc8a64b5fa107496fa7"
-            }
-          ],
-          "url" => "http://github.com/wycats/thor/commit/8c16b9115dd6501d2d5bfacad035c2ece949c4bb",
-          "id" => "8c16b9115dd6501d2d5bfacad035c2ece949c4bb",
-          "committed_date" => "2010-05-05T03:00:10-07:00",
-          "authored_date" => "2010-05-05T03:00:10-07:00",
-          "message" => "Allow more actions to accept options as second argument.",
-          "committer" => {
-            "name" => "Jos√© Valim",
-            "login" => "josevalim",
-            "email" => "jose.valim@gmail.com"
-          },
-          "tree" => "4563289f019b3972457effd6d4d01bfb619e9e3f"
-        },
-      ]
-    }
-
-    FakeWeb.register_uri(:get,
-      'http://github.com/api/v2/json/commits/list/wycats/thor/master?page=1',
-      :body => commits_page1.to_json)
-    FakeWeb.register_uri(:get,
-      'http://github.com/api/v2/json/commits/list/wycats/thor/master?page=2',
-      :body => commits_page2.to_json)
 
     @repo = Github::Repo.new('wycats/thor')
   end
@@ -259,32 +255,15 @@ describe "Github::Repo#users" do
   context "smooth sailing" do
     before(:each) do
       FakeWeb.register_uri(:get,
-        'http://github.com/api/v2/json/commits/list/wycats/thor/master?page=3',
-        :body => {"error" => "Not Found"}.to_json,
-        :status => ["404", "Not Found"])
+        'http://github.com/api/v2/json/repos/show/wycats/thor/contributors',
+        :body => @contributors.to_json)
     end
 
-    it "finds users from the first page of results" do
+    it "figures out the usernames" do
       @repo.users.should include(Github::User.new('josevalim'))
       @repo.users.should include(Github::User.new('seeflanigan'))
-    end
-
-    it "finds users from subsequent pages of results" do
-      @repo.users.should include(Github::User.new('joshbuddy'))
-    end
-
-    it "ignores commits by people without github logins" do
-      @repo.users.should_not include(Github::User.new(''))
-    end
-
-    it "filters out duplicates" do
-      @repo.users.find_all do |user|
-        user.name == 'josevalim'
-      end.size.should == 1
-    end
-
-    it "retries on 500 (that's Github's rate limiter's way of saying 'screw you, buddy')" do
-      exceptions = [RestClient::Unauthorized.new, RestClient::ResourceNotFound.new]
+      @repo.users.should include(Github::User.new('smerritt'))
+      @repo.users.should include(Github::User.new('wycats'))
     end
   end
 
@@ -298,27 +277,30 @@ describe "Github::Repo#users" do
     context "a small number of times" do
       before(:each) do
         FakeWeb.register_uri(:get,
-          'http://github.com/api/v2/json/commits/list/wycats/thor/master?page=3',
+          'http://github.com/api/v2/json/repos/show/wycats/thor/contributors',
           [{
               :body => {"error" => "Unauthorized"}.to_json, # guessing
               :status => ["401", "Unauthorized"],
             }, {
               :exception => Errno::ETIMEDOUT,
             }, {
-              :body => {"error" => "Not Found"}.to_json,
-              :status => ["404", "Not Found"],
+              :body => @contributors.to_json,
             }])
       end
 
       it "retries some times" do
         lambda { @repo.users }.should_not raise_error
       end
+
+      it "still works" do
+        @repo.users.should include(Github::User.new('josevalim'))
+      end
     end
 
     context "a large number of times" do
       before(:each) do
         FakeWeb.register_uri(:get,
-          'http://github.com/api/v2/json/commits/list/wycats/thor/master?page=3',
+          'http://github.com/api/v2/json/repos/show/wycats/thor/contributors',
           [{
               :body => {"error" => "Unauthorized"}.to_json, # guessing
               :status => ["401", "Unauthorized"],
