@@ -17,3 +17,4 @@ DataMapper.setup(:default, database_uri)
 
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'app/models'
+require 'app/jobs'

@@ -5,9 +5,7 @@ module Github
 
     def users
       @users ||= contributors_data.map do |contributor|
-        contributor["login"]
-      end.map do |github_username|
-        Github::User.new(github_username)
+        Github::User.new(contributor["login"], contributor["gravatar_id"])
       end
     end
 

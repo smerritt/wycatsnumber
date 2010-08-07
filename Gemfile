@@ -14,8 +14,10 @@ gem 'dm-do-adapter',        dm_version
 gem 'dm-sqlite-adapter',    dm_version
 
 gem 'rake'
-gem 'json_pure', :require => 'json'
+gem 'json'
 gem 'rest-client',          '~>1.6.0'
+gem 'resque'
+gem 'SystemTimer'
 
 group(:test) do
   gem 'rspec',              '~>1.3.0'

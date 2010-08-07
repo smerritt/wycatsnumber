@@ -5,6 +5,7 @@ class Author
 
   property :id,              Serial
   property :github_username, String,  :required => true
+  property :gravatar_id,     String
   property :distance,        Integer, :required => true, :default => INFINITE_DISTANCE
 
   has n, :collaborations,  :child_key => [:source_id]
@@ -13,6 +14,16 @@ class Author
   validates_with_block :distance do
     [distance && distance >= 0, "Distance must be non-negative"]
   end
+
+
+  def self.from_github_user(user)
+    first(:github_username => user.name)
+  end
+
+  def self.create_from_github_user(user)
+    create(:github_username => user.name, :gravatar_id => user.gravatar_id)
+  end
+
 
   def worked(args)
     with = args[:with] or raise ArgumentError, ":with is a required argument"

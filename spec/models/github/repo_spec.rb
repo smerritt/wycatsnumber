@@ -259,11 +259,10 @@ describe "Github::Repo#users" do
         :body => @contributors.to_json)
     end
 
-    it "figures out the usernames" do
-      @repo.users.should include(Github::User.new('josevalim'))
-      @repo.users.should include(Github::User.new('seeflanigan'))
-      @repo.users.should include(Github::User.new('smerritt'))
-      @repo.users.should include(Github::User.new('wycats'))
+    it "figures out the authors" do
+      @repo.users.should include(Github::User.new('josevalim', "e837f6b7fd146ab16ed3d663476c063e"))
+      @repo.users.should include(Github::User.new('smerritt', "f31901d97286576f0d6a939309afabad"))
+      @repo.users.should include(Github::User.new('wycats', "428167a3ec72235ba971162924492609"))
     end
   end
 
@@ -293,7 +292,7 @@ describe "Github::Repo#users" do
       end
 
       it "still works" do
-        @repo.users.should include(Github::User.new('josevalim'))
+        @repo.users.should include(Github::User.new('josevalim', "e837f6b7fd146ab16ed3d663476c063e"))
       end
     end
 
