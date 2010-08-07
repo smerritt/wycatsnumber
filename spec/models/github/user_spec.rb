@@ -177,6 +177,9 @@ describe Github::User do
             :body => {"error" => "Unauthorized"}.to_json, # guessing
             :status => ["401", "Unauthorized"],
           }, {
+            :body => {"error" => "Forbidden"}.to_json, # guessing
+            :status => ["403", "Forbidden"],
+          }, {
             :exception => Errno::ETIMEDOUT,
           }, {
             :body => @repo_data.to_json
