@@ -3,7 +3,6 @@ class Collaboration
 
   property :id, Serial
 
-  belongs_to :source, 'Author'
-  belongs_to :target, 'Author'
+  belongs_to :author
   belongs_to :project
 end

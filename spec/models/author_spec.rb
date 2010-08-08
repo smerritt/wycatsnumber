@@ -69,6 +69,7 @@ describe Author do
 
       fran.distance.should == 6   # sanity check
 
+      $debug = 1
       fran.worked(:with => @wycats,  :on => Project.gen)
       fran.distance.should  == 1
       edna.reload.distance.should  == 2
@@ -84,6 +85,8 @@ describe Author do
 
   describe "#path_to_origin" do
     it "is a list of [project, author] pairs leading to the source" do
+      pending "need sleep badly"
+
       @brenda.path_to_origin.should == [
         [@brenda_project, @alice],
         [@alice_project, @wycats],

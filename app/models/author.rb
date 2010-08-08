@@ -8,8 +8,9 @@ class Author
   property :gravatar_id,     String
   property :distance,        Integer, :required => true, :default => INFINITE_DISTANCE
 
-  has n, :collaborations,  :child_key => [:source_id]
-  has n, :neighbors, self, :through => :collaborations, :via => :target
+  has n, :collaborations
+  has n, :projects,            :through => :collaborations
+  has n, :neighbors,     self, :through => :projects, :via => :author
 
   validates_with_block :distance do
     [distance && distance >= 0, "Distance must be non-negative"]
@@ -26,6 +27,8 @@ class Author
 
 
   def worked(args)
+    debugger if $debug
+
     with = args[:with] or raise ArgumentError, ":with is a required argument"
     on   = args[:on]   or raise ArgumentError, ":on is a required argument"
 
@@ -46,22 +49,22 @@ class Author
   protected
 
   def add_collaboration(other, project)
+
     if self.distance > other.distance + 1
       update(:distance => other.distance + 1)
-      self.distance = other.distance + 1
       further_neighbors.each do |fn|
         fn.neighbor_got_closer(self)
       end
     end
 
-    c = Collaboration.first_or_create(:source => self, :target => other, :project => project)
+    c = Collaboration.first_or_create(:author => self, :project => project)
     c.valid? or raise "FAIL: #{c.errors.inspect}"
     c
   end
 
   def projects_for(other)
     return nil unless other
-    self.collaborations(:target => other).projects
+    self.collaborations(:author => other).projects
   end
 
   def nearer_neighbors
