@@ -10,12 +10,15 @@ class Project
   def update_authors(authors)
     update(:authors => authors) or raise "Failed to save #{self}"
     closest = authors.min {|a,b| a.distance <=> b.distance}
-    if closest
-      authors.find_all do |a|
-        a.distance > closest.distance + 1
-      end.each do |a|
-        a.neighbor_got_closer(closest)
-      end
+
+    getting_closer = authors.find_all do |a|
+      a.distance > closest.distance + 1
+    end
+
+    until getting_closer.empty?
+      author = getting_closer.pop
+      author.relax
+      getting_closer += author.too_far_neighbors.find_all {|a| !getting_closer.include?(a)}
     end
   end
 

@@ -50,6 +50,10 @@ class Author
     neighbors.all(:distance => self.distance - 1)
   end
 
+  def nearest_neighbor
+    neighbors.all(:order => :distance.asc).first
+  end
+
   def predecessor
     nearer_neighbors.first
   end
@@ -58,13 +62,14 @@ class Author
     neighbors.all(:distance.gt => self.distance)
   end
 
-  def neighbor_got_closer(neighbor)
-    if neighbor.distance < self.distance - 1
-      Log.info "#{github_username}/#{distance} getting closer to #{neighbor.github_username}/#{neighbor.distance}"
-      update(:distance => neighbor.distance + 1)
-      further_neighbors.each do |fn|
-        fn.neighbor_got_closer(self)
-      end
+  def too_far_neighbors
+    neighbors.all(:distance.gt => self.distance + 1)
+  end
+
+  def relax
+    if nearest = nearest_neighbor
+      Log.info "#{github_username}/#{distance} getting closer to #{nearest.github_username}/#{nearest.distance}"
+      update(:distance => nearest.distance + 1)
     end
   end
 
