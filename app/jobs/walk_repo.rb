@@ -3,6 +3,12 @@ class WalkRepo
 
   def self.perform(repo_name)
     return if Project.first(:name => repo_name)
+    DataMapper.repository do
+      _perform(repo_name)
+    end
+  end
+
+  def self._perform(repo_name)
     project = Project.create(:name => repo_name)
 
     authors = Github::Repo.new(repo_name).users.map do |user|
