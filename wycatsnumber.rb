@@ -15,6 +15,9 @@ database_uri = "%s://%s:%s@%s/%s" % [
 
 DataMapper.setup(:default, database_uri)
 
+require 'logger'
+Log = ::Logger.new((ENV['RACK_ENV'] || 'development') + '-trace.log')
+
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'app/models'
 require 'app/jobs'

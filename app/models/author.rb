@@ -28,6 +28,7 @@ class Author
   end
 
   def self.create_from_github_user(user)
+    Log.info("creating user #{user.name}")
     create(:github_username => user.name, :gravatar_id => user.gravatar_id)
   end
 
@@ -59,6 +60,7 @@ class Author
 
   def neighbor_got_closer(neighbor)
     if neighbor.distance < self.distance - 1
+      Log.info "#{github_username}/#{distance} getting closer to #{neighbor.github_username}/#{neighbor.distance}"
       update(:distance => neighbor.distance + 1)
       further_neighbors.each do |fn|
         fn.neighbor_got_closer(self)

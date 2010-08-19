@@ -9,6 +9,7 @@ class WalkRepo
   end
 
   def self._perform(repo_name)
+    Log.info("walking #{repo_name}")
     project = Project.create(:name => repo_name)
 
     authors = Github::Repo.new(repo_name).users.map do |user|

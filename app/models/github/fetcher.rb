@@ -2,19 +2,24 @@ module Github
   module Fetcher
 
     def fetch_and_retry(url)
+      Log.debug "Fetching #{url}"
       retry_count = 0
 
       begin
-        RestClient.get(url)
+        result = RestClient.get(url)
+        Log.debug "Fetching #{url} successful"
+        result
       rescue RestClient::ResourceNotFound
         nil
       rescue RestClient::Unauthorized, RestClient::Forbidden, Errno::ETIMEDOUT => e
         if retry_count > 100
           raise e
         end
-        # puts "Got #{e.inspect}; going to retry"
+
         retry_count += 1
-        sleep sleep_time(retry_count)
+        t = sleep_time(retry_count)
+        Log.debug "Fetching #{url} hit rate limiter; will retry in #{t}s"
+        sleep t
         retry
       end
     end
