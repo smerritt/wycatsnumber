@@ -78,8 +78,6 @@ describe Author do
 
   describe "#path_to_origin" do
     it "is a list of [project, author] pairs leading to the source" do
-      pending "need sleep badly"
-
       @brenda.path_to_origin.should == [
         [@brenda_project, @alice],
         [@alice_project, @wycats],

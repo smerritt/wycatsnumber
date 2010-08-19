@@ -42,8 +42,7 @@ class Author
   end
 
   def projects_for(other)
-    return nil unless other
-    self.collaborations(:author => other).projects
+    projects.all(:collaborations => {:author => other})
   end
 
   def nearer_neighbors
