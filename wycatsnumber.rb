@@ -7,7 +7,7 @@ dbinfo = YAML.load(File.read(File.expand_path(File.join(File.dirname(__FILE__), 
 
 database_uri = "%s://%s:%s@%s/%s" % [
   dbinfo['adapter'],
-  dbinfo['username'],
+  dbinfo['user'],
   dbinfo['password'],
   dbinfo['host'],
   dbinfo['database'],
