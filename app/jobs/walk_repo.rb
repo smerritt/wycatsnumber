@@ -16,7 +16,6 @@ class WalkRepo
     end
 
     project.update_authors(authors)
-
   end
 
   private
