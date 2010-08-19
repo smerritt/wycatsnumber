@@ -14,3 +14,9 @@ namespace :resque do
     require 'wycatsnumber'
   end
 end
+
+task :kickoff do
+  require 'wycatsnumber'
+  wycats = Author.first_or_create(:github_username => 'wycats').update(:distance => 0)
+  Resque.enqueue(WalkUser, 'wycats')
+end

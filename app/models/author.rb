@@ -4,7 +4,7 @@ class Author
   INFINITE_DISTANCE = 2**31 - 1
 
   property :id,              Serial
-  property :github_username, String,  :required => true
+  property :github_username, String,  :required => true, :length => 255, :index => true
   property :gravatar_id,     String
   property :distance,        Integer, :required => true, :default => INFINITE_DISTANCE
 
