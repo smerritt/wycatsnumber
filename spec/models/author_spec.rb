@@ -41,10 +41,10 @@ describe Author do
     @alice_project  = Project.gen(:name => 'alice-project')
     @brenda_project = Project.gen(:name => 'brenda-project')
 
-    @alice.worked( :with => @wycats, :on => @alice_project)
-    @brenda.worked(:with => @alice,  :on => @brenda_project)
-    @albert.worked(:with => @wycats, :on => Project.gen)
-    @bob.worked(   :with => @albert, :on => Project.gen)
+    @alice_project.update_authors [@wycats, @alice]
+    @brenda_project.update_authors [@alice, @brenda]
+    Project.gen.update_authors [@wycats, @albert]
+    Project.gen.update_authors [@albert, @bob]
   end
   
   describe "#worked" do
@@ -62,24 +62,17 @@ describe Author do
       edna =  described_class.gen(:github_username => 'Edna')
       fran =  described_class.gen(:github_username => 'Fran')
 
-      carol.worked(:with => @brenda, :on => Project.gen)
-      carol.worked(:with => debra,   :on => Project.gen)
-      debra.worked(:with => edna,    :on => Project.gen)
-      edna.worked( :with => fran,    :on => Project.gen)
+      Project.gen.update_authors [carol, @brenda]
+      Project.gen.update_authors [carol, debra]
+      Project.gen.update_authors [debra, edna]
+      Project.gen.update_authors [edna, fran]
 
       fran.distance.should == 6   # sanity check
 
-      $debug = 1
-      fran.worked(:with => @wycats,  :on => Project.gen)
+      Project.gen.update_authors [fran, @wycats]
       fran.distance.should  == 1
       edna.reload.distance.should  == 2
       debra.reload.distance.should == 3
-    end
-
-    it "doesn't create duplicate collaborations" do
-      lambda {
-        @alice.worked(:with => @wycats, :on => @alice_project)
-      }.should_not change(Collaboration, :count)
     end
   end
 
