@@ -13,12 +13,12 @@ module Github
     private
 
     def contributors_data
-      response = fetch_and_retry(contributors_url)
+      response = fetch_and_retry(contributors_path)
       JSON.parse(response.body)["contributors"]
     end
 
-    def contributors_url
-      "http://github.com/api/v2/json/repos/show/#{name}/contributors"
+    def contributors_path
+      "/api/v2/json/repos/show/#{name}/contributors"
     end
 
   end

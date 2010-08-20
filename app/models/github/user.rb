@@ -3,7 +3,7 @@ module Github
     include Fetcher
 
     def repos
-      response = fetch_and_retry(repos_url)
+      response = fetch_and_retry(repos_path)
       @repos ||= JSON.parse(response.body)["repositories"].map do |repo_data|
         Github::Repo.new(repo_data["name"], repo_data["fork"])
       end
@@ -11,8 +11,8 @@ module Github
 
     private
 
-    def repos_url
-      "http://github.com/api/v2/json/repos/show/#{name}"
+    def repos_path
+      "/api/v2/json/repos/show/#{name}"
     end
 
   end
