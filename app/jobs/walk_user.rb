@@ -7,6 +7,6 @@ class WalkUser
     end.each do |repo|
       Resque.enqueue(WalkRepo, "#{username}/#{repo.name}")
     end
-
   end
+
 end
