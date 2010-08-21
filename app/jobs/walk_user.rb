@@ -2,7 +2,7 @@ class WalkUser
   def self.queue() :walk_user end
 
   def self.perform(username)
-    Github::User.new(username).repos.find_all do |repo|
+    Github::User.new(username).owned_repos.find_all do |repo|
       if repo.fork?
         Resque.enqueue(FindParentRepo, repo.name)
       else

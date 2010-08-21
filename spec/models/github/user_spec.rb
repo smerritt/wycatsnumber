@@ -133,7 +133,7 @@ describe Github::User do
 
   end
 
-  context "#repos" do
+  context "#owned_repos" do
     before(:each) do
       FakeWeb.register_uri(:get,
         'http://github.com/api/v2/json/repos/show/smerritt',
@@ -143,7 +143,7 @@ describe Github::User do
 
     it "returns a list of the user's repos" do
       user = Github::User.new('smerritt')
-      user.repos.map {|r| r.name}.should == %w[
+      user.owned_repos.map {|r| r.name}.should == %w[
         smerritt/spiffy-elisp
         smerritt/rails-2.3.2-app
         smerritt/distlockrun
@@ -157,15 +157,15 @@ describe Github::User do
     it "makes sure the repos know if they are forks or not" do
       user = Github::User.new('smerritt')
 
-      thor = user.repos.find {|r| r.name == 'smerritt/thor' }
-      rackapp = user.repos.find {|r| r.name == 'smerritt/rackapp'}
+      thor = user.owned_repos.find {|r| r.name == 'smerritt/thor' }
+      rackapp = user.owned_repos.find {|r| r.name == 'smerritt/rackapp'}
 
       thor.should be_fork
       rackapp.should_not be_fork
     end
   end
 
-  context "#repos with network gremlins" do
+  context "#owned_repos with network gremlins" do
     before(:each) do
       @user = Github::User.new('smerritt')
     end
@@ -185,7 +185,7 @@ describe Github::User do
             :body => @repo_data.to_json
           }])
 
-      @user.repos.should_not be_empty
+      @user.owned_repos.should_not be_empty
     end
   end
 end
