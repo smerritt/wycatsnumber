@@ -71,4 +71,21 @@ describe 'FindParentRepo#perform' do
     end
   end
 
+  # this happens when there's a public fork of a private repo
+  context "when the repository isn't there" do
+    before(:each) do
+      FakeWeb.register_uri(:get,
+        'http://github.com/api/v2/json/repos/show/ty/po',
+        :body => {"error" => "Not Found"}.to_json,
+        :status => ["404", "Not Found"])
+    end
+
+    it "does nothing" do
+      Resque.should_not_receive(:enqueue)
+      lambda do
+        FindParentRepo.perform('ty/po')
+      end.should_not raise_error
+    end
+  end
+
 end

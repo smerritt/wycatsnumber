@@ -3,6 +3,8 @@ class FindParentRepo
 
   def self.perform(repo_name)
     repo = Github::Repo.fetch(repo_name)
+    return unless repo
+
     if repo.fork?
       Resque.enqueue(self, repo.parent_name)
     else
