@@ -5,7 +5,7 @@ module Github
     def repos
       response = fetch_and_retry(repos_path)
       @repos ||= JSON.parse(response.body)["repositories"].map do |repo_data|
-        Github::Repo.new(repo_data["name"], repo_data["fork"])
+        Github::Repo.from_api_repo(repo_data)
       end
     end
 

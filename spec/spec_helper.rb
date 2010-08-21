@@ -16,3 +16,7 @@ end
 
 DataMapper.auto_migrate!
 FakeWeb.allow_net_connect = false
+
+# don't care about the multiple endpoints in test mode, and it makes
+# it really hard to use FakeWeb
+Github::Fetcher.endpoints = ['http://github.com']

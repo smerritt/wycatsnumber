@@ -30,6 +30,7 @@ describe 'WalkUser#perform' do
           "name" => "rails-2.3.2-app",
           "has_wiki" => true,
           "created_at" => "2009/05/21 13:26:58 -0700",
+          "parent" => "engineyard/rails-2.3.2-app",
           "watchers" => 2,
           "private" => false,
           "fork" => true,
@@ -51,14 +52,9 @@ describe 'WalkUser#perform' do
       :body => @repo_data.to_json)
   end
 
-  it "enqueues the user's repos for walking" do
+  it "enqueues the user's non-fork repos for walking and forked repos for parent location" do
     Resque.should_receive(:enqueue).with(WalkRepo, "smerritt/spiffy-elisp")
-
-    WalkUser.perform('smerritt')
-  end
-
-  it "ignores forked repos" do
-    Resque.should_not_receive(:enqueue).with(WalkRepo, "smerritt/rails-2.3.2-app")
+    Resque.should_receive(:enqueue).with(FindParentRepo, "smerritt/rails-2.3.2-app")
 
     WalkUser.perform('smerritt')
   end

@@ -3,9 +3,11 @@ class WalkUser
 
   def self.perform(username)
     Github::User.new(username).repos.find_all do |repo|
-      !repo.fork?
-    end.each do |repo|
-      Resque.enqueue(WalkRepo, "#{username}/#{repo.name}")
+      if repo.fork?
+        Resque.enqueue(FindParentRepo, repo.name)
+      else
+        Resque.enqueue(WalkRepo, repo.name)
+      end
     end
   end
 

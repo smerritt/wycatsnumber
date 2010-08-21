@@ -27,6 +27,7 @@ describe Github::User do
           "name" => "rails-2.3.2-app",
           "has_wiki" => true,
           "created_at" => "2009/05/21 13:26:58 -0700",
+          "parent" => "engineyard/rails-2.3.2-app",
           "watchers" => 2,
           "private" => false,
           "fork" => true,
@@ -78,6 +79,7 @@ describe Github::User do
           "name" => "chowder",
           "has_wiki" => true,
           "created_at" => "2009/10/18 12:33:16 -0700",
+          "parent" => "ichverstehe/chowder",
           "watchers" => 3,
           "private" => false,
           "fork" => true,
@@ -95,6 +97,7 @@ describe Github::User do
           "name" => "thor",
           "has_wiki" => true,
           "created_at" => "2010/04/30 13:50:26 -0700",
+          "parent" => "wycats/thor",
           "watchers" => 1,
           "private" => false,
           "fork" => true,
@@ -140,22 +143,22 @@ describe Github::User do
 
     it "returns a list of the user's repos" do
       user = Github::User.new('smerritt')
-      user.repos.should == [
-        Github::Repo.new('spiffy-elisp',      false),
-        Github::Repo.new('rails-2.3.2-app',   true),
-        Github::Repo.new('distlockrun',       false),
-        Github::Repo.new('emacs-starter-kit', true),
-        Github::Repo.new('chowder',           true),
-        Github::Repo.new('thor',              true),
-        Github::Repo.new('rackapp',           false),
+      user.repos.map {|r| r.name}.should == %w[
+        smerritt/spiffy-elisp
+        smerritt/rails-2.3.2-app
+        smerritt/distlockrun
+        smerritt/emacs-starter-kit
+        smerritt/chowder
+        smerritt/thor
+        smerritt/rackapp
       ]
     end
 
     it "makes sure the repos know if they are forks or not" do
       user = Github::User.new('smerritt')
 
-      thor = user.repos.find {|r| r.name == 'thor' }
-      rackapp = user.repos.find {|r| r.name == 'rackapp'}
+      thor = user.repos.find {|r| r.name == 'smerritt/thor' }
+      rackapp = user.repos.find {|r| r.name == 'smerritt/rackapp'}
 
       thor.should be_fork
       rackapp.should_not be_fork
@@ -165,9 +168,6 @@ describe Github::User do
   context "#repos with network gremlins" do
     before(:each) do
       @user = Github::User.new('smerritt')
-      class << @user
-        def sleep(*) nil end
-      end
     end
 
     it "retries until it gets data" do

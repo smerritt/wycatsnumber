@@ -267,12 +267,6 @@ describe "Github::Repo#users" do
   end
 
   context "when the rate limiter or other gremlin strikes" do
-    before(:each) do
-      class << @repo
-        def sleep(*) nil end  # there's no need to really sleep in tests
-      end
-    end
-
     context "a small number of times" do
       before(:each) do
         FakeWeb.register_uri(:get,
@@ -311,5 +305,104 @@ describe "Github::Repo#users" do
       end
     end
 
+  end
+end
+
+describe "Github::Repo#parent_name" do
+  before(:each) do
+    @fork_repo_api = {
+      "name" => "thor",
+      "created_at" => "2010/04/30 13:50:26 -0700",
+      "parent" => "wycats/thor",
+      "has_wiki" => true,
+      "watchers" => 1,
+      "private" => false,
+      "url" => "http://github.com/smerritt/thor",
+      "fork" => true,
+      "pushed_at" => "2010/07/24 20:28:49 -0700",
+      "has_downloads" => true,
+      "open_issues" => 0,
+      "has_issues" => false,
+      "homepage" => "http://www.yehudakatz.com",
+      "forks" => 0,
+      "description" => "A scripting framework that replaces rake and sake",
+      "source" => "wycats/thor",
+      "owner" => "smerritt",
+    }
+
+    @parent_repo_api = {
+      "name" => "thor",
+      "created_at" => "2008/05/07 13:07:31 -0700",
+      "has_wiki" => true,
+      "watchers" => 552,
+      "private" => false,
+      "url" => "http://github.com/wycats/thor",
+      "fork" => false,
+      "pushed_at" => "2010/08/19 18:31:58 -0700",
+      "has_downloads" => true,
+      "open_issues" => 9,
+      "has_issues" => true,
+      "homepage" => "http://www.yehudakatz.com",
+      "forks" => 47,
+      "description" => "A scripting framework that replaces rake and sake",
+      "owner" => "wycats",
+    }
+  end
+
+  it "finds the parent of a fork" do
+    parent_name = Github::Repo.from_api_repo(@fork_repo_api).parent_name
+    parent_name.should == 'wycats/thor'
+  end
+
+  it "is nil for a non-fork" do
+    parent_name = Github::Repo.from_api_repo(@parent_repo_api).parent_name
+    parent_name.should be_nil
+  end
+end
+
+describe "Github::Repo.fetch" do
+  before(:each) do
+    @e2_bundler = {
+      "repository" => {
+        "name" => "bundler",
+        "created_at" => "2010/08/18 06:12:00 -0700",
+        "parent" => "carlhuda/bundler",
+        "has_wiki" => true,
+        "watchers" => 1,
+        "private" => false,
+        "url" => "http://github.com/e2/bundler",
+        "fork" => true,
+        "pushed_at" => "2010/08/18 13:08:55 -0700",
+        "has_downloads" => true,
+        "open_issues" => 0,
+        "has_issues" => false,
+        "homepage" => "http://gembundler.com",
+        "forks" => 0,
+        "description" => "Manage your application's gem dependencies with less pain",
+        "source" => "carlhuda/bundler",
+        "owner" => "e2",
+      }
+    }
+
+    FakeWeb.register_uri(:get,
+      'http://github.com/api/v2/json/repos/show/e2/bundler',
+      :body => @e2_bundler.to_json)
+
+    FakeWeb.register_uri(:get,
+      'http://github.com/api/v2/json/repos/show/ty/po',
+      :body => {"error" => "Not Found"}.to_json,
+      :status => ["404", "Not Found"])
+  end
+
+  it "finds and loads the repo from Github" do
+    repo = Github::Repo.fetch('e2/bundler')
+    repo.should_not be_nil
+    repo.name.should == 'e2/bundler'
+    repo.should be_fork
+    repo.parent_name.should == 'carlhuda/bundler'
+  end
+
+  it "returns nil if the repo is missing" do
+    Github::Repo.fetch('ty/po').should be_nil
   end
 end
