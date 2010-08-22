@@ -12,10 +12,10 @@ class FindParentRepo
     end
 
     if repo.fork?
-      Log.info("Repository #{repo_name} is a fork of #{repo.parent_name}, itself a fork")
+      Log.info("Repository #{repo_name} is a fork of #{repo.parent_name}")
       Resque.enqueue(self, repo.parent_name)
     else
-      Log.info("Repository #{repo_name} is a fork of #{repo.parent_name}")
+      Log.info("Repository #{repo_name} is not a fork")
       Resque.enqueue(WalkRepo, repo_name)
     end
   end
