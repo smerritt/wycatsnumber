@@ -4,5 +4,6 @@ require 'dm-transactions'
 
 require 'app/models/author'
 require 'app/models/collaboration'
+require 'app/models/fork'
 require 'app/models/project'
 require 'app/models/github'

@@ -3,10 +3,6 @@ require File.expand_path('../../spec_helper', __FILE__)
 describe 'FindParentRepo#perform' do
 
   before(:each) do
-    Resque.stub!(:enqueue)
-  end
-
-  before(:each) do
     @fork_repo_data = {
       "repository" => {
         "name" => "thor",
@@ -62,9 +58,18 @@ describe 'FindParentRepo#perform' do
       Resque.should_receive(:enqueue).with(FindParentRepo, 'wycats/thor')
       FindParentRepo.perform('smerritt/thor')
     end
+
+    it "only does it once (doesn't re-evaluate known forks)" do
+      Resque.should_receive(:enqueue).with(FindParentRepo, 'wycats/thor').exactly(1).times
+      2.times { FindParentRepo.perform('smerritt/thor') }
+    end
   end
 
   context "on a non-fork" do
+    before(:each) do
+      Resque.stub!(:enqueue)
+    end
+
     it "enqueues a WalkRepo" do
       Resque.should_receive(:enqueue).with(WalkRepo, 'wycats/thor')
       FindParentRepo.perform('wycats/thor')
@@ -73,6 +78,10 @@ describe 'FindParentRepo#perform' do
 
   # this happens when there's a public fork of a private repo
   context "when the repository isn't there" do
+    before(:each) do
+      Resque.stub!(:enqueue)
+    end
+
     before(:each) do
       FakeWeb.register_uri(:get,
         'http://github.com/api/v2/json/repos/show/ty/po',
