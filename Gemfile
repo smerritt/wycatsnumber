@@ -3,12 +3,11 @@ source :gemcutter
 dm_version    = '~> 1.0.0'
 
 gem 'dm-core',              dm_version
+gem 'dm-aggregates',        dm_version
 gem 'dm-migrations',        dm_version
 gem 'dm-validations',       dm_version
 gem 'dm-constraints',       dm_version
 gem 'dm-transactions',      dm_version
-gem 'dm-timestamps',        dm_version
-gem 'dm-observer',          dm_version
 
 gem 'dm-do-adapter',        dm_version
 gem 'dm-sqlite-adapter',    dm_version
