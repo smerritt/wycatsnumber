@@ -6,6 +6,10 @@ module Github
       !parent_name.nil?
     end
 
+    def owner
+      name.split(/\//).first
+    end
+
     def self.fetch(name)
       api_response = fetch_and_retry(base_path(name))
       if api_response    # 404 --> nil

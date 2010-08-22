@@ -7,7 +7,7 @@ describe 'WalkUser#perform' do
   end
 
   before(:each) do
-    @repo_data = {
+    @owned_repo_data = {
       "repositories" => [
         {
           "name" => "spiffy-elisp",
@@ -47,14 +47,58 @@ describe 'WalkUser#perform' do
       ],
     }
 
+    # you always watch your own stuff
+    @watched_repo_data = @owned_repo_data
+    @watched_repo_data["repositories"] << {
+      "name" => "bundler",
+      "created_at" => "2010/01/25 16:46:38 -0800",
+      "has_wiki" => true,
+      "watchers" => 772,
+      "private" => false,
+      "url" => "http://github.com/carlhuda/bundler",
+      "fork" => false,
+      "pushed_at" => "2010/08/20 21:18:41 -0700",
+      "has_downloads" => true,
+      "open_issues" => 44,
+      "has_issues" => true,
+      "homepage" => "http://gembundler.com",
+      "forks" => 110,
+      "description" => "Manage your application's gem dependencies with less pain",
+      "owner" => "carlhuda",
+    }
+    @watched_repo_data["repositories"] << {
+      "name" => "ey-cloud-recipes",
+      "created_at" => "2009/02/20 15:46:57 -0800",
+      "has_wiki" => false,
+      "parent" => "subpoprecords/ey-cloud-recipes",
+      "watchers" => 573,
+      "private" => false,
+      "url" => "http://github.com/engineyard/ey-cloud-recipes",
+      "fork" => true,
+      "pushed_at" => "2010/08/20 16:31:21 -0700",
+      "open_issues" => 1,
+      "has_downloads" => true,
+      "has_issues" => true,
+      "homepage" => "http://www.engineyard.com/products/appcloud",
+      "forks" => 91,
+      "description" => "A starter repo for custom chef recipes on EY's cloud platform.  These are for reference, and do not indicate a supported status.",
+      "source" => "subpoprecords/ey-cloud-recipes",
+      "owner" => "engineyard"
+    }
+
     FakeWeb.register_uri(:get,
       'http://github.com/api/v2/json/repos/show/smerritt',
-      :body => @repo_data.to_json)
+      :body => @owned_repo_data.to_json)
+    FakeWeb.register_uri(:get,
+      'http://github.com/api/v2/json/repos/watched/smerritt',
+      :body => @watched_repo_data.to_json)
   end
 
-  it "enqueues the user's non-fork repos for walking and forked repos for parent location" do
+  it "walks the non-fork and watched repos and finds the parents of forks" do
     Resque.should_receive(:enqueue).with(WalkRepo, "smerritt/spiffy-elisp")
     Resque.should_receive(:enqueue).with(FindParentRepo, "smerritt/rails-2.3.2-app")
+    Resque.should_receive(:enqueue).with(WalkRepo, "carlhuda/bundler")
+    Resque.should_receive(:enqueue).with(FindParentRepo, "engineyard/ey-cloud-recipes")
 
     WalkUser.perform('smerritt')
   end

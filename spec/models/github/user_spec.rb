@@ -188,4 +188,75 @@ describe Github::User do
       @user.owned_repos.should_not be_empty
     end
   end
+
+  context "#unowned_watched_repos" do
+    before(:each) do
+      @watched = {
+        "repositories" => [
+          {
+            "name" => "bundler",
+            "created_at" => "2010/01/25 16:46:38 -0800",
+            "has_wiki" => true,
+            "watchers" => 772,
+            "private" => false,
+            "url" => "http://github.com/carlhuda/bundler",
+            "fork" => false,
+            "pushed_at" => "2010/08/20 21:18:41 -0700",
+            "has_downloads" => true,
+            "open_issues" => 44,
+            "has_issues" => true,
+            "homepage" => "http://gembundler.com",
+            "forks" => 110,
+            "description" => "Manage your application's gem dependencies with less pain",
+            "owner" => "carlhuda"
+          },
+          {
+            "name" => "thor",
+            "created_at" => "2010/04/30 13:50:26 -0700",
+            "has_wiki" => true,
+            "watchers" => 1,
+            "private" => false,
+            "url" => "http://github.com/smerritt/thor",
+            "fork" => true,
+            "pushed_at" => "2010/07/24 20:28:49 -0700",
+            "has_downloads" => true,
+            "open_issues" => 0,
+            "has_issues" => false,
+            "homepage" => "http://www.yehudakatz.com",
+            "forks" => 0,
+            "description" => "A scripting framework that replaces rake and sake",
+            "owner" => "smerritt"
+          },
+          {
+            "name" => "rackapp",
+            "created_at" => "2010/06/21 16:58:26 -0700",
+            "has_wiki" => true,
+            "watchers" => 3,
+            "private" => false,
+            "url" => "http://github.com/smerritt/rackapp",
+            "fork" => false,
+            "pushed_at" => "2010/08/06 16:10:39 -0700",
+            "has_downloads" => true,
+            "open_issues" => 0,
+            "has_issues" => true,
+            "homepage" => "",
+            "forks" => 1,
+            "description" => "Little rack app that I use for testing out deployments",
+            "owner" => "smerritt"
+          },
+        ]}
+
+      FakeWeb.register_uri(:get,
+        'http://github.com/api/v2/json/repos/watched/smerritt',
+        :body => @watched.to_json)
+    end
+
+    # these are ignored because #owned_repos will return them
+    it "returns repos where the owner is not the user" do
+      user = Github::User.new('smerritt')
+      repos = user.unowned_watched_repos
+      repos.size.should == 1
+      repos.first.name.should == 'carlhuda/bundler'
+    end
+  end
 end
