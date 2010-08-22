@@ -1,10 +1,8 @@
 module Github
-  class Repo < Struct.new(:name, :parent_name)
+  class Repo < Struct.new(:name, :fork, :parent_name)
     include Fetcher
 
-    def fork?
-      !parent_name.nil?
-    end
+    alias fork? fork
 
     def owner
       name.split(/\//).first
@@ -18,7 +16,9 @@ module Github
     end
 
     def self.from_api_repo(api_repo)
-      new("%s/%s" % [api_repo["owner"], api_repo["name"]], api_repo["parent"])
+      new("%s/%s" % [api_repo["owner"], api_repo["name"]],
+        api_repo["fork"],
+        api_repo["parent"])
     end
 
     def users
