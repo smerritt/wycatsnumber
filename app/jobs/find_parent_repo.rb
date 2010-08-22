@@ -2,6 +2,8 @@ class FindParentRepo
   def self.queue() :find_parent_repo end
 
   def self.perform(repo_name)
+    return if repo_name.nil? || repo_name.empty?
+
     Log.info("Finding parent of #{repo_name}")
     repo = Github::Repo.fetch(repo_name)
     unless repo

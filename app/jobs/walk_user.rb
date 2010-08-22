@@ -2,6 +2,8 @@ class WalkUser
   def self.queue() :walk_user end
 
   def self.perform(username)
+    return if username.nil? || username.empty?
+
     user = Github::User.new(username)
 
     Log.info "walking user #{username}"

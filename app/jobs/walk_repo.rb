@@ -2,6 +2,8 @@ class WalkRepo
   def self.queue() :walk_repo end
 
   def self.perform(repo_name)
+    return if repo_name.nil? || repo_name.empty?
+
     if Project.first(:name => repo_name)
       Log.info "Project #{repo_name} already exists; skipping"
       return
