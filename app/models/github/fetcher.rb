@@ -48,9 +48,9 @@ module Github
           # rotate-and-try-again strategy will do nothing but
           # continuously hammer our one endpoint and ensure we never
           # make progress.
+          Github::Fetcher.rotate_endpoints
           if retry_count == 1
             Log.debug "Fetching #{url} hit rate limiter; rotating endpoints and trying again immediately"
-            Github::Fetcher.rotate_endpoints
           else
             t = sleep_time(retry_count)
             Log.debug "Fetching #{url} hit rate limiter; will retry in #{t}s"
