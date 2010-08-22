@@ -4,10 +4,13 @@ class WalkUser
   def self.perform(username)
     user = Github::User.new(username)
 
+    Log.info "walking user #{username}"
     (user.owned_repos + user.unowned_watched_repos).each do |repo|
       if repo.fork?
+        Log.info "enqueuing FindParentRepo(#{repo.name})"
         Resque.enqueue(FindParentRepo, repo.name)
       else
+        Log.info "enqueuing WalkRepo(#{repo.name})"
         Resque.enqueue(WalkRepo, repo.name)
       end
     end
