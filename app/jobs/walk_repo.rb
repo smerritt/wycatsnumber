@@ -2,7 +2,10 @@ class WalkRepo
   def self.queue() :walk_repo end
 
   def self.perform(repo_name)
-    return if Project.first(:name => repo_name)
+    if Project.first(:name => repo_name)
+      Log.info "Project #{repo_name} already exists; skipping"
+      return
+    end
     DataMapper.repository do
       _perform(repo_name)
     end
