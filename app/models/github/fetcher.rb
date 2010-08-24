@@ -32,7 +32,7 @@ module Github
           Github::Fetcher.rotate_endpoints
           retry
         rescue RestClient::Unauthorized, RestClient::Forbidden, Errno::ETIMEDOUT => e
-          if retry_count > 100
+          if retry_count > 10
             raise e
           end
 
@@ -60,9 +60,9 @@ module Github
         end
       end
 
-      # bounded random exponential backoff, maximum 1024 seconds
+      # bounded random exponential backoff, maximum 90 seconds
       def sleep_time(retries)
-        rand(2**[10,retries].min)
+        [rand(2**[10,retries].min), 90].min
       end
     end
 
