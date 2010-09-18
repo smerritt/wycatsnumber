@@ -50,7 +50,9 @@ class Author
 
   def self.update_predecessor_matrix
     COMMIT_RANGE.each do |weight|
-      graph = all.inject(Graph.new) do |g, author|
+      all_authors = all.to_a
+
+      graph = all_authors.inject(Graph.new) do |g, author|
         g.add_node(author.id)
       end
 
@@ -70,26 +72,27 @@ class Author
         end
       end
 
-      graph.compute_all_pairs_shortest_path do |author_id, source_id, predecessor_id, project_id|
-        if pr = Predecession.first(
-            :from_id => author_id,
-            :to_id   => source_id,
-            :commits => weight)
-          pr.update(
-            :predecessor_id => predecessor_id,
-            :project_id     => project_id)
-        else
-          pr = Predecession.create(
-            :to_id          => source_id,
-            :from_id        => author_id,
-            :predecessor_id => predecessor_id,
-            :project_id     => project_id,
-            :commits        => weight)
-          pr.valid? or raise "wtf?: #{pr.errors.inspect}"
+      all_authors.each do |author|
+        graph.find_shortest_paths(author.id) do |author_id, predecessor_id, project_id|
+          if pr = Predecession.first(
+              :to      => author,
+              :from_id => author_id,
+              :commits => weight)
+            pr.update(
+              :predecessor_id => predecessor_id,
+              :project_id     => project_id)
+          else
+            pr = Predecession.create(
+              :to             => author,
+              :from_id        => author_id,
+              :predecessor_id => predecessor_id,
+              :project_id     => project_id,
+              :commits        => weight)
+            pr.valid? or raise "wtf?: #{pr.errors.inspect}"
+          end
         end
       end
     end
-
   end
 
   private
@@ -149,40 +152,36 @@ class Graph
     @edges[node]
   end
 
-  def compute_all_pairs_shortest_path
+  def find_shortest_paths(source)
     raise ArgumentError, "Needs a block" unless block_given?
 
-    # Dijkstra's algorithm for each node
-    # It's okay-ish for positive-edge-weight graphs.
-    @nodes.each do |source|
-      distance = Hash.new(INFINITE_DISTANCE)
-      distance[source] = 0
+    # Plain old Dijkstra's algorithm
+    distance = Hash.new(INFINITE_DISTANCE)
+    distance[source] = 0
 
-      predecessor = {}
+    predecessor = {}
 
-      unvisited = @nodes.dup
-      while ! unvisited.empty?
-        # SLOW: store unvisited as a min-heap for speed
-        current = unvisited.min {|a,b| distance[a] <=> distance[b]}
-        neighbors(current).each do |neighbor|
-          tentative_distance = distance[current] + 1
-          present_distance = distance[neighbor]
-          if tentative_distance < present_distance
-            distance[neighbor] = tentative_distance
-            predecessor[neighbor] = current
-          end
-
+    unvisited = @nodes.dup
+    while ! unvisited.empty?
+      # SLOW: store unvisited as a min-heap for speed
+      current = unvisited.min {|a,b| distance[a] <=> distance[b]}
+      neighbors(current).each do |neighbor|
+        tentative_distance = distance[current] + 1
+        present_distance = distance[neighbor]
+        if tentative_distance < present_distance
+          distance[neighbor] = tentative_distance
+          predecessor[neighbor] = current
         end
 
-        unvisited -= [current]
       end
 
-      @nodes.each do |node|
-        if pred = predecessor[node]
-          yield node, source, pred, @extra_data[node][pred]
-        end
-      end
+      unvisited -= [current]
+    end
 
+    @nodes.each do |node|
+      if pred = predecessor[node]
+        yield node, pred, @extra_data[node][pred]
+      end
     end
   end
 

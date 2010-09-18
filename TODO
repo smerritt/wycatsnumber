@@ -1,2 +1,3 @@
 * validate Collaboration#commits > 0
 * validate Predecession#commits > 0
+* don't re-walk Authors

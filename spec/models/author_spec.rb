@@ -34,7 +34,7 @@ describe Author do
     end
   end
 
-  describe "#predecessor(source_user, count)" do
+  describe "graph-walking functions" do
     before(:each) do
       # build me up a graph, baby.
       #
@@ -73,33 +73,35 @@ describe Author do
       Author.update_predecessor_matrix
     end
 
-    it "is nil for yourself" do
-      @alice.predecessor(@alice, 1).should be_nil
-    end
+    context "#predecessor" do
+      it "is nil for yourself" do
+        @alice.predecessor(@alice, 1).should be_nil
+      end
 
-    it "is nil if you're trying to go between disconnected subsets" do
-      @alice.predecessor(@mary, 1).should be_nil
-    end
+      it "is nil if you're trying to go between disconnected subsets" do
+        @alice.predecessor(@mary, 1).should be_nil
+      end
 
-    it "finds predecessors within a subgraph" do
-      @nathan.predecessor(@mary, 1).should == @mary
-    end
+      it "finds predecessors within a subgraph" do
+        @nathan.predecessor(@mary, 1).should == @mary
+      end
 
-    it "honors the weight" do
-      @alice.predecessor(@carol, 1).should == @carol
-      @alice.predecessor(@carol, 3).should == @bob
-    end
+      it "honors the weight" do
+        @alice.predecessor(@carol, 1).should == @carol
+        @alice.predecessor(@carol, 3).should == @bob
+      end
 
-    it "is symmetric" do
-      @alice.predecessor(@carol, 2).should == @bob
-      @carol.predecessor(@alice, 2).should == @bob
-    end
+      it "is symmetric" do
+        @alice.predecessor(@carol, 2).should == @bob
+        @carol.predecessor(@alice, 2).should == @bob
+      end
 
-    it "treats the weight as a minimum" do
-      @alice.predecessor(@carol, 2).should == @bob
-    end
+      it "treats the weight as a minimum" do
+        @alice.predecessor(@carol, 2).should == @bob
+      end
 
-    # probably need a different api for this, eh?
-    it "has the right project"
+      # probably need a different api for this, eh?
+      it "has the right project"
+    end
   end
 end
