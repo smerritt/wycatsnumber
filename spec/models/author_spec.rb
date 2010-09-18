@@ -1,95 +1,105 @@
 require File.expand_path('../../spec_helper', __FILE__)
 
 describe Author do
-  describe "#valid?" do
-    it "requires github_username" do
-      Author.make(:github_username => nil).should_not be_valid
-    end
-
-    it "requires a distance" do
-      Author.make(:distance => nil).should_not be_valid
-    end
-    
-    it "requires a non-negative distance" do
-      Author.make(:distance => -1).should_not be_valid
-      Author.make(:distance =>  0).should     be_valid
-      Author.make(:distance =>  1).should     be_valid
-    end
-  end
-end
-
-describe Author do
   before(:each) do
-    @wycats = described_class.gen(:distance => 0, :github_username => 'wycats')
-
-    # ASCII art time:
-    #
-    #      wycats
-    #     /      \
-    #    /        \
-    # alice      albert
-    #   |          |
-    #   |          |
-    # brenda      bob
-    #
-
-    @alice  = described_class.gen(:github_username => 'Alice')
-    @brenda = described_class.gen(:github_username => 'Brenda')
     @albert = described_class.gen(:github_username => 'Albert')
-    @bob    = described_class.gen(:github_username => 'Bob')
-
-    @alice_project  = Project.gen(:name => 'alice-project')
-    @brenda_project = Project.gen(:name => 'brenda-project')
-
-    @alice_project.update_authors [@wycats, @alice]
-    @brenda_project.update_authors [@alice, @brenda]
-    Project.gen.update_authors [@wycats, @albert]
-    Project.gen.update_authors [@albert, @bob]
+    @project  = Project.gen(:name => 'alice-project')
   end
-  
-  describe "#worked" do
-    it "gets the distances right when building outward from source" do
-      @alice.distance.should  == 1
-      @brenda.distance.should == 2
 
-      @albert.distance.should == 1
-      @bob.distance.should    == 2
+  describe "#worked_on(project, count)" do
+    it "creates a collaboration" do
+      @albert.worked_on(@project, 2)
+      new_collab = @albert.collaboration_for(@project)
+
+      new_collab.author.should == @albert
+      new_collab.project.should == @project
+      new_collab.commits.should == 2
     end
 
-    it "propagates distance-shrink information outward" do
-      carol = described_class.gen(:github_username => 'Carol')
-      debra = described_class.gen(:github_username => 'Debra')
-      edna =  described_class.gen(:github_username => 'Edna')
-      fran =  described_class.gen(:github_username => 'Fran')
+    it "updates commit counts if necessary" do
+      # a while ago, he'd committed a little bit
+      @albert.worked_on(@project, 2)
 
-      Project.gen.update_authors [carol, @brenda]
-      Project.gen.update_authors [carol, debra]
-      Project.gen.update_authors [debra, edna]
-      Project.gen.update_authors [edna, fran]
+      # but recently, he's gotten more patches accepted
+      @albert.worked_on(@project, 7)
+      @albert.collaboration_for(@project).commits.should == 7
+    end
 
-      fran.distance.should == 6   # sanity check
-
-      Project.gen.update_authors [fran, @wycats]
-      fran.distance.should  == 1
-      edna.reload.distance.should  == 2
-      debra.reload.distance.should == 3
+    it "does not create duplicates" do
+      lambda do
+        2.times do
+          @albert.worked_on(@project, 183)
+        end
+      end.should change(Collaboration, :count).by(1)
     end
   end
 
-  describe "#path_to_origin" do
-    it "is a list of [project, author] pairs leading to the source" do
-      @brenda.path_to_origin.should == [
-        [@brenda_project, @alice],
-        [@alice_project, @wycats],
-      ]
+  describe "#predecessor(source_user, count)" do
+    before(:each) do
+      # build me up a graph, baby.
+      #
+      #      alice
+      #        |
+      #        3
+      #        |
+      #   rails/rails---1---carol
+      #        |              |
+      #        4              3
+      #        |              |
+      #       bob--5--carlhuda/bundler
+      #
+      #
+      #
+      #       mary---1---isolated/project---2---nathan
+
+      @alice   = Author.gen(:github_username => 'alice')
+      @bob     = Author.gen(:github_username => 'bob')
+      @carol   = Author.gen(:github_username => 'carol')
+      @mary    = Author.gen(:github_username => 'mary')
+      @nathan  = Author.gen(:github_username => 'nathan')
+
+      @rails_rails      = Project.gen(:name => 'rails/rails')
+      @carlhuda_bundler = Project.gen(:name => 'carlhuda/bundler')
+      @isolated_project = Project.gen(:name => 'isolated/project')
+
+      @alice.worked_on  @rails_rails,      3
+      @bob.worked_on    @rails_rails,      4
+      @bob.worked_on    @carlhuda_bundler, 5
+      @carol.worked_on  @rails_rails,      1
+      @carol.worked_on  @carlhuda_bundler, 3
+      @mary.worked_on   @isolated_project, 1
+      @nathan.worked_on @isolated_project, 2
+
+      Author.update_predecessor_matrix
     end
 
-    it "is empty for the source" do
-      @wycats.path_to_origin.should == []
+    it "is nil for yourself" do
+      @alice.predecessor(@alice, 1).should be_nil
     end
 
-    it "is empty for unconnected authors" do
-      Author.gen.path_to_origin.should == []
+    it "is nil if you're trying to go between disconnected subsets" do
+      @alice.predecessor(@mary, 1).should be_nil
     end
+
+    it "finds predecessors within a subgraph" do
+      @nathan.predecessor(@mary, 1).should == @mary
+    end
+
+    it "honors the weight" do
+      @alice.predecessor(@carol, 1).should == @carol
+      @alice.predecessor(@carol, 3).should == @bob
+    end
+
+    it "is symmetric" do
+      @alice.predecessor(@carol, 2).should == @bob
+      @carol.predecessor(@alice, 2).should == @bob
+    end
+
+    it "treats the weight as a minimum" do
+      @alice.predecessor(@carol, 2).should == @bob
+    end
+
+    # probably need a different api for this, eh?
+    it "has the right project"
   end
 end
