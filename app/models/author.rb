@@ -111,45 +111,6 @@ end
 class Graph
   INFINITE_DISTANCE = 2**31 - 1
 
-  class Edge < Struct.new(:left, :right, :extra_data)
-
-    def to_callback_format
-      [left.to_callback_format, right.to_callback_format, extra_data]
-    end
-
-    def ==(other)
-      self.left == other.left && self.right == other.right
-    end
-
-  end
-
-  class Node < Struct.new(:id, :edges)
-
-    def initialize(*_)
-      super
-      self.edges ||= []
-    end
-
-    def to_callback_format
-      id
-    end
-
-    def neighbors_with_edge
-      edges.map do |e|
-        if self.id == e.left.id
-          [e, e.right]
-        else
-          [e, e.left]
-        end
-      end
-    end
-
-    def ==(other)
-      self.id == other.id
-    end
-
-  end
-
   def initialize
     @nodes = []
     @edges = Hash.new{|h,k| h[k] = []}
