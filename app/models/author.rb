@@ -112,6 +112,13 @@ class Graph
   INFINITE_DISTANCE = 2**31 - 1
 
   def initialize
+    # tried making these objects; it results in either really really
+    # slow hashing (seconds per object on a 100-node graph!) or it
+    # complicates the data by making you track things by ID in data
+    # structures instead of just using the thing as a hash key.
+    #
+    # so yes, this is C-smelling, but on the other hand, this will
+    # finish in your lifetime on a reasonable-size graph.
     @nodes = []
     @edges = Hash.new{|h,k| h[k] = []}
     @extra_data = Hash.new{|h,k| h[k] = {}}
