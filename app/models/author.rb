@@ -91,30 +91,30 @@ class Author
               author_id_from_node_id(predecessor_id)
           else
             # predecessor is a project, node an author
-            #
+            further_author_id = author_id_from_node_id(node_id)
+            project_id = project_id_from_node_id(predecessor_id)
+
             # since we've sorted the edges so that (project -> author)
             # edges come first, this is guaranteed present
-            preceding_author_id =
+            closer_author_id =
               upstream_author_id[project_id_from_node_id(predecessor_id)]
 
             # XXX please make this something like
             # Predecession.set_entry(...)
-            #
-            # also make the names suck less
             if pr = Predecession.first(
                 :to      => goal,
-                :from_id => author_id_from_node_id(node_id),
+                :from_id => further_author_id,
                 :commits => weight)
               pr.update(
-                :predecessor_id => preceding_author_id,
-                :project_id     => project_id_from_node_id(predecessor_id)) or raise "update wtf?: #{pr.errors.inspect}"
+                :predecessor_id => closer_author_id,
+                :project_id     => project_id) or raise "update wtf?: #{pr.errors.inspect}"
             else
               pr = Predecession.create(
                 :to             => goal,
-                :from_id        => author_id_from_node_id(node_id),
+                :from_id        => further_author_id,
                 :commits        => weight,
-                :predecessor_id => preceding_author_id,
-                :project_id     => project_id_from_node_id(predecessor_id))
+                :predecessor_id => closer_author_id,
+                :project_id     => project_id)
               pr.valid? or raise "create wtf?: #{pr.errors.inspect}"
             end
           end
