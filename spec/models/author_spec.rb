@@ -1,12 +1,13 @@
 require File.expand_path('../../spec_helper', __FILE__)
 
 describe Author do
-  before(:each) do
-    @albert = described_class.gen(:github_username => 'Albert')
-    @project  = Project.gen(:name => 'alice-project')
-  end
 
   describe "#worked_on(project, count)" do
+    before(:each) do
+      @albert = described_class.gen(:github_username => 'Albert')
+      @project  = Project.gen(:name => 'alice-project')
+    end
+
     it "creates a collaboration" do
       @albert.worked_on(@project, 2)
       new_collab = @albert.collaboration_for(@project)
@@ -99,9 +100,6 @@ describe Author do
       it "treats the weight as a minimum" do
         @alice.predecessor(@carol, 2).should == @bob
       end
-
-      # probably need a different api for this, eh?
-      it "has the right project"
     end
   end
 end

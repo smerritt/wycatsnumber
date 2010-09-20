@@ -51,44 +51,54 @@ class Author
   def self.update_predecessor_matrix
     COMMIT_RANGE.each do |weight|
       all_authors = all.to_a
+      all_projects = Project.all.to_a
 
       graph = all_authors.inject(Graph.new) do |g, author|
         g.add_node(author.id)
       end
 
-      bucketize(Collaboration.all(:commits.gte => weight)) do |collab|
-        collab.project_id
-      end.each do |project_id, collabs|
-        collabs.each do |left|
-          collabs.each do |right|
-            unless left == right
-              # enough nesting for you?
-              graph.add_edge(
-                left.author_id,
-                right.author_id,
-                project_id)
-            end
-          end
-        end
+      graph = all_projects.inject(graph) do |g, project|
+        g.add_node(-project.id)
       end
 
-      all_authors.each do |author|
-        graph.find_shortest_paths(author.id) do |author_id, predecessor_id, project_id|
-          if pr = Predecession.first(
-              :to      => author,
-              :from_id => author_id,
-              :commits => weight)
-            pr.update(
-              :predecessor_id => predecessor_id,
-              :project_id     => project_id)
-          else
-            pr = Predecession.create(
-              :to             => author,
-              :from_id        => author_id,
-              :predecessor_id => predecessor_id,
-              :project_id     => project_id,
-              :commits        => weight)
-            pr.valid? or raise "wtf?: #{pr.errors.inspect}"
+      Collaboration.all(:commits.gte => weight).each do |collab|
+        graph.add_edge(collab.author_id, -collab.project_id)
+        graph.add_edge(-collab.project_id, collab.author_id)
+      end
+
+      all_authors.each do |goal|
+        upstream_author_id = {}
+
+        graph.find_shortest_paths(goal.id).sort do |a, b|
+          a.first <=> b.first
+        end.each do |(node_id, predecessor_id)|
+          if node_id < 0    # node is a project, predecessor an author
+            upstream_author_id[node_id] = predecessor_id
+          else              # predecessor is a project, node an author
+            # since project ids are negative and we've sorted our
+            # edges, this is guaranteed to be there
+            preceding_author_id = upstream_author_id[predecessor_id]
+
+            # XXX please make this something like
+            # Predecession.set_entry(...)
+            #
+            # also make the names suck less
+            if pr = Predecession.first(
+                :to      => goal,
+                :from_id => node_id,
+                :commits => weight)
+              pr.update(
+                :predecessor_id => preceding_author_id,
+                :project_id     => -predecessor_id) or raise "update wtf?: #{pr.errors.inspect}"
+            else
+              pr = Predecession.create(
+                :to             => goal,
+                :from_id        => node_id,
+                :commits        => weight,
+                :predecessor_id => preceding_author_id,
+                :project_id     => -predecessor_id)
+              pr.valid? or raise "create wtf?: #{pr.errors.inspect}"
+            end
           end
         end
       end
@@ -124,7 +134,6 @@ class Graph
     # finish in your lifetime on a reasonable-size graph.
     @nodes = []
     @edges = Hash.new{|h,k| h[k] = []}
-    @extra_data = Hash.new{|h,k| h[k] = {}}
   end
 
   def add_node(node)
@@ -135,7 +144,7 @@ class Graph
     self
   end
 
-  def add_edge(left_node, right_node, extra_data)
+  def add_edge(left_node, right_node)
     unless @nodes.include?(left_node)
       raise ArgumentError, "Unknown node #{left_node}"
     end
@@ -144,7 +153,6 @@ class Graph
     end
 
     @edges[left_node] << right_node
-    @extra_data[left_node][right_node] = extra_data
     self
   end
 
@@ -153,8 +161,6 @@ class Graph
   end
 
   def find_shortest_paths(source)
-    raise ArgumentError, "Needs a block" unless block_given?
-
     # Plain old Dijkstra's algorithm
     distance = Hash.new(INFINITE_DISTANCE)
     distance[source] = 0
@@ -178,11 +184,11 @@ class Graph
       unvisited -= [current]
     end
 
-    @nodes.each do |node|
+    @nodes.map do |node|
       if pred = predecessor[node]
-        yield node, pred, @extra_data[node][pred]
+        [node, pred]
       end
-    end
+    end.compact
   end
 
 end
