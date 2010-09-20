@@ -54,30 +54,48 @@ class Author
       all_projects = Project.all.to_a
 
       graph = all_authors.inject(Graph.new) do |g, author|
-        g.add_node(author.id)
+        g.add_node(node_id_from_author_id(author.id))
       end
 
       graph = all_projects.inject(graph) do |g, project|
-        g.add_node(-project.id)
+        g.add_node(node_id_from_project_id(project.id))
       end
 
       Collaboration.all(:commits.gte => weight).each do |collab|
-        graph.add_edge(collab.author_id, -collab.project_id)
-        graph.add_edge(-collab.project_id, collab.author_id)
+        graph.add_edge(
+          node_id_from_author_id(collab.author_id),
+          node_id_from_project_id(collab.project_id))
+        graph.add_edge(
+          node_id_from_project_id(collab.project_id),
+          node_id_from_author_id(collab.author_id))
       end
 
       all_authors.each do |goal|
         upstream_author_id = {}
 
-        graph.find_shortest_paths(goal.id).sort do |a, b|
-          a.first <=> b.first
+        graph.find_shortest_paths(node_id_from_author_id(goal.id)).sort do |a, b|
+          # NB: the graph is constructed in such a way that all the
+          # edges are between a project and an author, so we need not
+          # check a.last and b.last here
+          if project_id?(a.first) && author_id?(b.first)
+            -1
+          elsif author_id?(a.first) && project_id?(b.first)
+            1
+          else
+            0
+          end
         end.each do |(node_id, predecessor_id)|
-          if node_id < 0    # node is a project, predecessor an author
-            upstream_author_id[node_id] = predecessor_id
-          else              # predecessor is a project, node an author
-            # since project ids are negative and we've sorted our
-            # edges, this is guaranteed to be there
-            preceding_author_id = upstream_author_id[predecessor_id]
+          if project_id?(node_id)
+            # node is a project, predecessor an author
+            upstream_author_id[project_id_from_node_id(node_id)] =
+              author_id_from_node_id(predecessor_id)
+          else
+            # predecessor is a project, node an author
+            #
+            # since we've sorted the edges so that (project -> author)
+            # edges come first, this is guaranteed present
+            preceding_author_id =
+              upstream_author_id[project_id_from_node_id(predecessor_id)]
 
             # XXX please make this something like
             # Predecession.set_entry(...)
@@ -85,18 +103,18 @@ class Author
             # also make the names suck less
             if pr = Predecession.first(
                 :to      => goal,
-                :from_id => node_id,
+                :from_id => author_id_from_node_id(node_id),
                 :commits => weight)
               pr.update(
                 :predecessor_id => preceding_author_id,
-                :project_id     => -predecessor_id) or raise "update wtf?: #{pr.errors.inspect}"
+                :project_id     => project_id_from_node_id(predecessor_id)) or raise "update wtf?: #{pr.errors.inspect}"
             else
               pr = Predecession.create(
                 :to             => goal,
-                :from_id        => node_id,
+                :from_id        => author_id_from_node_id(node_id),
                 :commits        => weight,
                 :predecessor_id => preceding_author_id,
-                :project_id     => -predecessor_id)
+                :project_id     => project_id_from_node_id(predecessor_id))
               pr.valid? or raise "create wtf?: #{pr.errors.inspect}"
             end
           end
@@ -106,6 +124,15 @@ class Author
   end
 
   private
+  def self.author_id?(id)  id > 0 end
+  def self.project_id?(id) id < 0 end
+
+  def self.node_id_from_author_id(id)   id end
+  def self.node_id_from_project_id(id) -id end
+
+  def self.author_id_from_node_id(id)   id end
+  def self.project_id_from_node_id(id) -id end
+
   # I could swear that Ruby has this built in, but I can't find it.
   #
   # On a related note, whose bright fucking idea was it to have
