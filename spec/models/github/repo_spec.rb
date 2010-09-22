@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 require File.expand_path('../../../spec_helper', __FILE__)
 
-describe "Github::Repo#users" do
+describe "Github::Repo#contributors" do
   before(:each) do
 
     # trimmed for conciseness (such as it is)
@@ -259,10 +259,13 @@ describe "Github::Repo#users" do
         :body => @contributors.to_json)
     end
 
-    it "figures out the authors" do
-      @repo.users.should include(Github::User.new('josevalim', "e837f6b7fd146ab16ed3d663476c063e"))
-      @repo.users.should include(Github::User.new('smerritt', "f31901d97286576f0d6a939309afabad"))
-      @repo.users.should include(Github::User.new('wycats', "428167a3ec72235ba971162924492609"))
+    it "figures out the authors and commit counts" do
+      @repo.contributors.should include(
+        [Github::User.new('josevalim', "e837f6b7fd146ab16ed3d663476c063e"), 410])
+      @repo.contributors.should include(
+        [Github::User.new('smerritt', "f31901d97286576f0d6a939309afabad"), 4])
+      @repo.contributors.should include(
+        [Github::User.new('wycats', "428167a3ec72235ba971162924492609"), 34])
     end
   end
 
@@ -282,11 +285,12 @@ describe "Github::Repo#users" do
       end
 
       it "retries some times" do
-        lambda { @repo.users }.should_not raise_error
+        lambda { @repo.contributors }.should_not raise_error
       end
 
       it "still works" do
-        @repo.users.should include(Github::User.new('josevalim', "e837f6b7fd146ab16ed3d663476c063e"))
+        @repo.contributors.should include(
+          [Github::User.new('josevalim', "e837f6b7fd146ab16ed3d663476c063e"), 410])
       end
     end
 
@@ -301,7 +305,7 @@ describe "Github::Repo#users" do
       end
 
       it "gives up eventually" do
-        lambda { @repo.users }.should raise_error(RestClient::Unauthorized)
+        lambda { @repo.contributors }.should raise_error(RestClient::Unauthorized)
       end
     end
 

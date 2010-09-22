@@ -21,9 +21,12 @@ module Github
         api_repo["parent"])
     end
 
-    def users
-      @users ||= contributors_data.map do |contributor|
-        Github::User.new(contributor["login"], contributor["gravatar_id"])
+    def contributors
+      @contributors ||= contributors_data.map do |contributor|
+        [
+          Github::User.new(contributor["login"], contributor["gravatar_id"]),
+          contributor["contributions"]
+        ]
       end
     end
 

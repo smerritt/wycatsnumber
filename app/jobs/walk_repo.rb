@@ -17,17 +17,16 @@ class WalkRepo
     Log.info("walking #{repo_name}")
     project = Project.create(:name => repo_name)
 
-    authors = Github::Repo.new(repo_name).users.map do |user|
-      if a = Author.from_github_user(user)
-        a
-      else
-        a = Author.create_from_github_user(user)
-        walk_user_later(user)
-        a
-      end
+    Github::Repo.new(repo_name).contributors.map do |(user, commit_count)|
+      author = if a = Author.from_github_user(user)
+                 a
+               else
+                 a = Author.create_from_github_user(user)
+                 walk_user_later(user)
+                 a
+               end
+      author.worked_on(project, commit_count)
     end
-
-    project.update_authors(authors)
   end
 
   private

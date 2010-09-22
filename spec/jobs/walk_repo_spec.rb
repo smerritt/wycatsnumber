@@ -4,7 +4,7 @@ require 'digest/md5'
 describe 'WalkRepo#perform' do
 
   before(:each) do
-    @wycats = Author.gen(:github_username => 'wycats', :distance => 0)
+    @wycats = Author.gen(:github_username => 'wycats')
   end
 
   before(:each) do
@@ -86,14 +86,6 @@ describe 'WalkRepo#perform' do
 
   end
 
-  it "updates distances and paths" do
-    repo_has_collaborators(%w[alice wycats])
-
-    WalkRepo.perform(@repo)
-
-    Author.first(:github_username => 'alice').distance.should == 1
-  end
-
   it "includes gravatar ids" do
     repo_has_collaborators(%w[alice])
 
@@ -103,8 +95,5 @@ describe 'WalkRepo#perform' do
       "6384e2b2184bcbf58eccf10ca7a6563c"   # md5sum of 'alice'
 
   end
-
-  # this is more of a reminder for me than an actual spec
-  it "wraps the whole thing in a serializable transaction"
 
 end
