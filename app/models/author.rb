@@ -6,6 +6,7 @@ class Author
   property :id,              Serial
   property :github_username, String,  :required => true, :length => 255, :index => true
   property :gravatar_id,     String
+  property :fetched_at,      DateTime
 
   has n, :collaborations
   has n, :projects,            :through => :collaborations
@@ -25,6 +26,14 @@ class Author
   def self.create_from_github_user(user)
     Log.info("creating user #{user.name}")
     create(:github_username => user.name, :gravatar_id => user.gravatar_id)
+  end
+
+  def needs_fetch?
+    !fetched_at || (Time.now - fetched_at.to_time >= 60*60*24*7)   # at least a week old
+  end
+
+  def fetched!
+    update(:fetched_at => Time.now)
   end
 
   def collaboration_for(project)
