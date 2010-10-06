@@ -5,6 +5,8 @@ class WalkUser
     return if username.nil? || username.empty?
 
     user = Github::User.new(username)
+    author = Author.first(:github_username => username)
+    return unless author.needs_fetch?
 
     Log.info "walking user #{username}"
     (user.owned_repos + user.unowned_watched_repos).each do |repo|
@@ -16,6 +18,7 @@ class WalkUser
         Resque.enqueue(WalkRepo, repo.name)
       end
     end
+    author.fetched!
   end
 
 end

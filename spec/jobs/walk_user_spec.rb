@@ -7,6 +7,10 @@ describe 'WalkUser#perform' do
   end
 
   before(:each) do
+    @author = Author.gen(:github_username => 'smerritt')
+  end
+
+  before(:each) do
     @owned_repo_data = {
       "repositories" => [
         {
@@ -99,6 +103,26 @@ describe 'WalkUser#perform' do
     Resque.should_receive(:enqueue).with(FindParentRepo, "engineyard/ey-cloud-recipes")
 
     WalkUser.perform('smerritt')
+  end
+
+  it "updates #fetched_at" do
+    @author.update(:fetched_at => Time.now - 60*60*24*8)  # 8 days ago
+    now = Time.now
+    Time.stub!(:now).and_return(now)
+
+    lambda do
+      WalkUser.perform('smerritt')
+    end.should change { @author.reload.fetched_at }.to(now.to_datetime)
+  end
+
+  it "does nothing unless the author's #fetched_at is old enough" do
+    Resque.should_not_receive(:enqueue)
+
+    @author.update(:fetched_at => Time.now - 10)
+
+    lambda do
+      WalkUser.perform('smerritt')
+    end.should_not change { @author.reload.fetched_at }
   end
 
 end
