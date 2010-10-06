@@ -5,13 +5,17 @@ Bundler.require
 
 dbinfo = YAML.load(File.read(File.expand_path(File.join(File.dirname(__FILE__), "config", "database.yml"))))[ENV["RACK_ENV"] || 'development']
 
-database_uri = "%s://%s:%s@%s/%s" % [
-  dbinfo['adapter'],
-  dbinfo['user'],
-  dbinfo['password'],
-  dbinfo['host'],
-  dbinfo['database'],
-]
+database_uri = "#{dbinfo['adapter']}://"
+if user = dbinfo['user']
+  database_uri << user
+end
+if password = dbinfo['password']
+  database_uri << ":" << password
+end
+if host = dbinfo['host']
+  database_uri << host
+end
+database_uri << "/" << dbinfo['database']
 
 DataMapper.setup(:default, database_uri)
 

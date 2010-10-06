@@ -12,6 +12,7 @@ gem 'dm-transactions',      dm_version
 gem 'dm-do-adapter',        dm_version
 gem 'dm-sqlite-adapter',    dm_version
 gem 'dm-mysql-adapter',     dm_version
+gem 'dm-postgres-adapter',  dm_version
 
 gem 'rake'
 gem 'json'
