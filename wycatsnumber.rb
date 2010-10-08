@@ -29,6 +29,7 @@ Log = ::Logger.new((ENV['RACK_ENV'] || 'development') + '-trace.log')
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'app/models'
 require 'app/jobs'
+require 'app/util'
 
 endpoints_yaml = File.expand_path(File.join(File.dirname(__FILE__), 'config', 'endpoints.yml'))
 if File.exist?(endpoints_yaml)
