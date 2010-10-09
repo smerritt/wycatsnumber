@@ -37,7 +37,6 @@ describe Author do
 
   describe "graph-walking functions" do
     before(:each) do
-      # build me up a graph, baby.
       #
       #      alice
       #        |
@@ -52,6 +51,7 @@ describe Author do
       #
       #
       #       mary---1---isolated/project---2---nathan
+      #
 
       @alice   = Author.gen(:github_username => 'alice')
       @bob     = Author.gen(:github_username => 'bob')

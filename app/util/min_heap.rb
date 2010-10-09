@@ -1,46 +1,82 @@
 class MinHeap
 
-  class Item < Struct.new(:key, :value); end
+  # I was unable to find a gem that just gives me a simple min-heap.
+  #
+  # priority_queue uses the thread-safe Queue class, and is just a
+  # thin wrapper around a hash of (priority, Queue) pairs; getting the
+  # next element sorts that hash by priority each time, so it's
+  # O(N log N), and thus even worse than scanning an array.
+  #
+  # PriorityQueue is rather a lot of code for such a simple thing, and
+  # it's full of code like "@min.key rescue nil", which makes my teeth
+  # itch. Who knows what sort of things are getting masked by that
+  # "rescue nil"?
+  #
+  # Also, this is a fun weekend project, and writing a heap is fun.
+
+  class Item < Struct.new(:key, :value); end  # just syntactic sugar
 
   def initialize(starting_items = {})
     @index_of = {}
     @items = []
-    starting_items.each{|k,v| add(k,v)}
+    starting_items.each do |k,v|
+      self[k] = v
+    end
   end
 
   def empty?
     @items.empty?
   end
 
-  def add(key, value)
-    @items << Item.new(key, value)
-    @index_of[key] = @items.size - 1
-    heapify(@items.size - 1)
+  def [](key)
+    index = @index_of[key]
+
+    if index
+      @items[index].value
+    end
+  end
+
+  def []=(key, value)
+    if self[key]
+      decrease_key(key, value)
+    else
+      add(key, value)
+    end
+    value
+  end
+
+  def pop_key
+    pop.first
   end
 
   def pop
-    min = @items[0].key
-    @index_of.delete(min)
+    min = @items[0]
+    @index_of.delete(min.key)
     if @items.size > 1
-      @index_of[@items[0].key] = 0
       @items[0] = @items.pop
+      @index_of[@items[0].key] = 0
       heapify(0)
     else
       @items.pop
     end
-    min
+    [min.key, min.value]
   end
 
   def size
     @items.size
   end
 
-  def decrease_key(key, new_value)
-    @items[@index_of[key]].value = new_value
-    heapify(@index_of[key])
-  end
 
   private
+  # Really handy when you start getting weird results.
+  def assert_valid
+    @index_of.each do |key, index|
+      if @items[index].nil? || @items[index].key != key || @items.size != @index_of.size
+        raise "WTF? #{self.pretty_inspect}"
+      end
+    end
+  end
+
   def left_index(index)
     2*index + 1
   end
@@ -59,6 +95,17 @@ class MinHeap
 
   def has_right_child?(index)
     @items.size > right_index(index)
+  end
+
+  def add(key, value)
+    @items << Item.new(key, value)
+    @index_of[key] = @items.size - 1
+    heapify(@items.size - 1)
+  end
+
+  def decrease_key(key, new_value)
+    @items[@index_of[key]].value = new_value
+    heapify(@index_of[key])
   end
 
   def value(index)

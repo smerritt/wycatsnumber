@@ -1,10 +1,10 @@
 require File.expand_path('../../spec_helper', __FILE__)
 
 describe MinHeap do
-  def pop_all(heap)
+  def pop_all_keys(heap)
     all = []
     until heap.empty?
-      all << heap.pop
+      all << heap.pop_key
     end
     all
   end
@@ -16,13 +16,13 @@ describe MinHeap do
 
     it "stops being empty when you add things to it" do
       heap = described_class.new
-      heap.add('beer', 5)
+      heap['beer'] = 5
       heap.should_not be_empty
     end
 
     it "becomes empty again once all its items are removed" do
       heap = described_class.new
-      heap.add('beer', 5)
+      heap['beer'] = 5
       heap.pop
       heap.should be_empty
     end
@@ -33,11 +33,11 @@ describe MinHeap do
       heap = described_class.new
       heap.size.should == 0
 
-      heap.add(:a, 1)
+      heap[:a] = 1
       heap.size.should == 1
 
-      heap.add(:b, 2)
-      heap.add(:c, 3)
+      heap[:b] = 2
+      heap[:c] = 3
       heap.size.should == 3
 
       heap.pop
@@ -56,45 +56,61 @@ describe MinHeap do
     end
   end
 
+  context "#[]" do
+    it "retrieves values" do
+      heap = described_class.new(:a => 1, :b => 2)
+      heap[:a].should == 1
+      heap[:b].should == 2
+      heap[:z].should == nil
+    end
+  end
+
   context "#pop" do
     before(:each) do
       @heap = described_class.new
     end
 
-    it "returns the key with the minimum value" do
-      @heap.add(:a, 1)
-      @heap.add(:b, 2)
-      @heap.add(:c, 3)
+    it "returns the (key, value) pair with the minimum value" do
+      @heap[:a] = 1
+      @heap[:b] = 2
+      @heap[:c] = 3
 
-      @heap.pop.should == :a
-      @heap.pop.should == :b
-      @heap.pop.should == :c
+      @heap.pop.should == [:a, 1]
+      @heap.pop.should == [:b, 2]
+      @heap.pop.should == [:c, 3]
     end
 
     it "returns the key with the minimum value no matter what order things are added in" do
-      @heap.add(:papabear, 30)
-      @heap.add(:babybear, 2)
-      @heap.add(:mamabear, 28)
+      @heap[:papabear] = 30
+      @heap[:babybear] = 2
+      @heap[:mamabear] = 28
 
-      pop_all(@heap).should == [:babybear, :mamabear, :papabear]
+      pop_all_keys(@heap).should == [:babybear, :mamabear, :papabear]
     end
 
-    it "finds the minimum value when it was added later" do
-      10.upto(20) {|i| @heap.add(i, i)}
+    it "finds the minimum even when it was added later" do
+      10.upto(20) {|i| @heap[i] = i }
 
-      @heap.pop.should == 10
+      @heap.pop.should == [10, 10]
 
-      @heap.add(3, 3)
-      @heap.add(2, 2)
-      @heap.add(1, 1)
-      @heap.pop.should == 1
-      @heap.pop.should == 2
-      @heap.pop.should == 3
+      @heap[3] = 3
+      @heap[2] = 2
+      @heap[1] = 1
+      @heap.pop.should == [1, 1]
+      @heap.pop.should == [2, 2]
+      @heap.pop.should == [3, 3]
     end
-
   end
 
-  context "#decrease_key" do
+  context "#pop_key" do
+    it "just returns the key, not the value" do
+      heap = described_class.new(:a => 1, :b => 2)
+      heap.pop_key.should == :a
+      heap.pop_key.should == :b
+    end
+  end
+
+  context "#[]= when decreasing values of existing keys" do
     it "maintains the heap property" do
       heap = described_class.new(
         :a => 100,
@@ -104,18 +120,30 @@ describe MinHeap do
         :e => 50,
         :f => 60)
 
-      heap.decrease_key(:a, 10)
-      pop_all(heap).should == [:a, :b, :c, :d, :e, :f]
+      heap[:a] = 10
+      pop_all_keys(heap).should == [:a, :b, :c, :d, :e, :f]
     end
   end
 
-  context "larger numbers of elements" do
+  context "with large numbers of elements" do
     it "continues to work as expected" do
       heap = described_class.new((1..1000).inject({}) do |acc, i|
           acc.merge!(i => i)
         end)
 
-      pop_all(heap).should == (1..1000).to_a
+      pop_all_keys(heap).should == (1..1000).to_a
+    end
+  end
+
+  context "regression tests" do
+    it "doesn't get screwy indexes by calling #pop" do
+      heap = described_class.new(:a => 1, :b => 2, :c => 3)
+      heap.pop
+
+      lambda do
+        heap[:b].should == 2
+        heap[:c].should == 3
+      end.should_not raise_error
     end
   end
 

@@ -198,26 +198,33 @@ class Graph
 
   def find_shortest_paths(source)
     # Plain old Dijkstra's algorithm
+    predecessor = {}
+
     distance = Hash.new(INFINITE_DISTANCE)
     distance[source] = 0
 
-    predecessor = {}
+    unvisited_nodes = MinHeap.new(@nodes.inject({}) do |acc, node|
+        acc.merge!(node => INFINITE_DISTANCE)
+      end)
+    unvisited_nodes[source] = 0
 
-    unvisited = @nodes.dup
-    while ! unvisited.empty?
-      # SLOW: store unvisited as a min-heap for speed
-      current = unvisited.min {|a,b| distance[a] <=> distance[b]}
+    until unvisited_nodes.empty?
+      current = unvisited_nodes.pop_key
       neighbors(current).each do |neighbor|
         tentative_distance = distance[current] + 1
         present_distance = distance[neighbor]
+
         if tentative_distance < present_distance
+          # It sucks that we have to update the distance in two
+          # places, but we need to know the distances of both visited
+          # and unvisited nodes, and the unvisited_nodes heap lacks
+          # any information about visited nodes.
           distance[neighbor] = tentative_distance
+          unvisited_nodes[neighbor] = tentative_distance
+
           predecessor[neighbor] = current
         end
-
       end
-
-      unvisited -= [current]
     end
 
     @nodes.map do |node|
