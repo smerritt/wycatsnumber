@@ -1,6 +1,14 @@
 require File.expand_path('../../spec_helper', __FILE__)
 
 describe MinHeap do
+  def pop_all(heap)
+    all = []
+    until heap.empty?
+      all << heap.pop
+    end
+    all
+  end
+
   context "#empty?" do
     it "starts empty" do
       described_class.new.should be_empty
@@ -68,9 +76,7 @@ describe MinHeap do
       @heap.add(:babybear, 2)
       @heap.add(:mamabear, 28)
 
-      @heap.pop.should == :babybear
-      @heap.pop.should == :mamabear
-      @heap.pop.should == :papabear
+      pop_all(@heap).should == [:babybear, :mamabear, :papabear]
     end
 
     it "finds the minimum value when it was added later" do
@@ -89,7 +95,28 @@ describe MinHeap do
   end
 
   context "#decrease_key" do
-    it "maintains the heap property"
+    it "maintains the heap property" do
+      heap = described_class.new(
+        :a => 100,
+        :b => 20,
+        :c => 30,
+        :d => 40,
+        :e => 50,
+        :f => 60)
+
+      heap.decrease_key(:a, 10)
+      pop_all(heap).should == [:a, :b, :c, :d, :e, :f]
+    end
+  end
+
+  context "larger numbers of elements" do
+    it "continues to work as expected" do
+      heap = described_class.new((1..1000).inject({}) do |acc, i|
+          acc.merge!(i => i)
+        end)
+
+      pop_all(heap).should == (1..1000).to_a
+    end
   end
 
 end
