@@ -70,7 +70,7 @@ module Github
       @endpoints = es
     end
 
-    endpoints = ['http://github.com']
+    self.endpoints = ['http://github.com']
 
     def self.rotate_endpoints
       @endpoints << @endpoints.shift
@@ -83,8 +83,6 @@ module Github
     def self.first_endpoint
       @endpoints.first
     end
-
-
 
   end
 end
