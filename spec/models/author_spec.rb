@@ -75,6 +75,12 @@ describe Author do
     end
 
     context "#predecessor" do
+      it "is idempotent" do
+        lambda do
+          Author.update_predecessor_matrix
+        end.should_not change(Predecession, :count)
+      end
+
       it "is nil for yourself" do
         @alice.predecessor(@alice, 1).should be_nil
       end

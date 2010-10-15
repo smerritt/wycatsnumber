@@ -59,17 +59,32 @@ class Author
 
   def self.update_predecessor_matrix
     COMMIT_RANGE.each do |weight|
+
+      Log.debug("fetching authors")
       all_authors = all.to_a
+
+      Log.debug("fetching projects")
       all_projects = Project.all.to_a
 
+      authors_by_id = all_authors.inject({}) do |by_id, author|
+        by_id.merge!(author.id => author)
+      end
+
+      projects_by_id = all_projects.inject({}) do |by_id, project|
+        by_id.merge!(project.id => project)
+      end
+
+      Log.debug("putting authors in graph")
       graph = all_authors.inject(Graph.new) do |g, author|
         g.add_node(node_id_from_author_id(author.id))
       end
 
+      Log.debug("putting projects in graph")
       graph = all_projects.inject(graph) do |g, project|
         g.add_node(node_id_from_project_id(project.id))
       end
 
+      Log.debug("fetching collaborations and putting in graph")
       Collaboration.all(:commits.gte => weight).each do |collab|
         graph.add_edge(
           node_id_from_author_id(collab.author_id),
@@ -78,8 +93,10 @@ class Author
           node_id_from_project_id(collab.project_id),
           node_id_from_author_id(collab.author_id))
       end
+      Log.debug("graph-building done")
 
       all_authors.each do |goal|
+        Log.debug("computing shortest-path tree for #{goal.github_username}(#{goal.id})")
         upstream_author_id = {}
 
         graph.find_shortest_paths(node_id_from_author_id(goal.id)).sort do |a, b|
@@ -112,18 +129,18 @@ class Author
             # Predecession.set_entry(...)
             if pr = Predecession.first(
                 :to      => goal,
-                :from_id => further_author_id,
+                :from    => authors_by_id[further_author_id],
                 :commits => weight)
               pr.update(
-                :predecessor_id => closer_author_id,
-                :project_id     => project_id) or raise "update wtf?: #{pr.errors.inspect}"
+                :predecessor    => authors_by_id[closer_author_id],
+                :project        => projects_by_id[project_id]) or raise "update wtf?: #{pr.errors.inspect}"
             else
               pr = Predecession.create(
-                :to             => goal,
-                :from_id        => further_author_id,
-                :commits        => weight,
-                :predecessor_id => closer_author_id,
-                :project_id     => project_id)
+                :to          => goal,
+                :from        => authors_by_id[further_author_id],
+                :commits     => weight,
+                :predecessor => authors_by_id[closer_author_id],
+                :project     => projects_by_id[project_id])
               pr.valid? or raise "create wtf?: #{pr.errors.inspect}"
             end
           end
