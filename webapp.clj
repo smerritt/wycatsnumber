@@ -49,6 +49,12 @@
                        {})
                   [node1 weight]))})
 
+(defn neighbors [graph node]
+  ((graph :edges)
+   node
+   {}))
+
+
 ;; project IDs and author IDs can collide, but they're all natural
 ;; numbers, so we can use the whole number line to make room
 (defn node-from-project-id [project-id]
@@ -57,6 +63,35 @@
   (- node))
 (def node-from-author-id identity)
 (def author-id-from-node identity)
+
+(defn path
+  ([graph src dest]
+     (path graph src dest 1))
+  ([graph src dest min-weight]
+     (loop [queue (list src)
+            predecessor {}]
+       (if (empty? queue)
+         nil
+         (let [current-node (first queue)
+               new-neighbors (map first
+                                  (filter (fn [[neighbor, edge-weight]]
+                                            (and (not (= neighbor src))
+                                                 (>= edge-weight min-weight)
+                                                 (not (predecessor neighbor))))
+                                          (neighbors graph current-node)))]
+           (println current-node new-neighbors queue predecessor)
+                  (if (= current-node dest)
+             (loop [path [current-node]
+                    next-node (predecessor current-node)]
+               (if (not next-node)
+                 path
+                 (recur (conj path next-node)
+                        (predecessor next-node))))
+             (recur (concat (rest queue) new-neighbors)
+                    (reduce (fn [acc n]
+                              (assoc acc n current-node))
+                            predecessor
+                            new-neighbors))))))))
 
 (defn load-graph []
   (sql/with-connection (db-connection (slurp "config/database.yml"))
