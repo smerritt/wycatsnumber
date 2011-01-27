@@ -79,8 +79,7 @@
                                                  (>= edge-weight min-weight)
                                                  (not (predecessor neighbor))))
                                           (neighbors graph current-node)))]
-           (println current-node new-neighbors queue predecessor)
-                  (if (= current-node dest)
+           (if (= current-node dest)
              (loop [path [current-node]
                     next-node (predecessor current-node)]
                (if (not next-node)
