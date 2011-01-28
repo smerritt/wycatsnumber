@@ -8,4 +8,4 @@
                  [org.clojars.rnewman/ring "0.2.2-sessions"]
                  [postgresql/postgresql "9.0-801.jdbc4"]]
   :dev-dependencies [[swank-clojure "1.2.1"]]
-  :jvm-opts ["-Xmx256m"])
+  :jvm-opts ["-Xmx1g"])
