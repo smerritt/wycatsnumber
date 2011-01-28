@@ -68,29 +68,42 @@
   ([graph src dest]
      (path graph src dest 1))
   ([graph src dest min-weight]
-     (loop [queue (list src)
-            predecessor {}]
+     (loop [queue [src]
+            predecessor {}
+            seen (hash-set)
+            examined 0]
        (if (empty? queue)
          nil
-         (let [current-node (first queue)
-               new-neighbors (map first
-                                  (filter (fn [[neighbor, edge-weight]]
-                                            (and (not (= neighbor src))
-                                                 (>= edge-weight min-weight)
-                                                 (not (predecessor neighbor))))
-                                          (neighbors graph current-node)))]
-           (if (= current-node dest)
-             (loop [path [current-node]
-                    next-node (predecessor current-node)]
-               (if (not next-node)
-                 path
-                 (recur (conj path next-node)
-                        (predecessor next-node))))
-             (recur (concat (rest queue) new-neighbors)
-                    (reduce (fn [acc n]
-                              (assoc acc n current-node))
-                            predecessor
-                            new-neighbors))))))))
+         (let [current-node (first queue)]
+           (if (seen current-node)
+             (recur (subvec queue 1)
+                    predecessor
+                    seen
+                    examined)
+             (let [new-neighbors (map first
+                                      (filter (fn [[neighbor, edge-weight]]
+                                                (and (not (= neighbor src))
+                                                     (>= edge-weight min-weight)
+                                                     (not (predecessor neighbor))))
+                                              (neighbors graph current-node)))]
+               (if (= current-node dest)
+                 (loop [path [current-node]
+                        next-node (predecessor current-node)]
+                   (println "Examined " examined " nodes")
+                   (if (not next-node)
+                     path
+                     (recur (conj path next-node)
+                            (predecessor next-node))))
+                 (recur (reduce (fn [acc n]
+                                  (conj acc n))
+                                (subvec queue 1)
+                                new-neighbors)
+                        (reduce (fn [acc n]
+                                  (assoc acc n current-node))
+                                predecessor
+                                new-neighbors)
+                        (conj seen current-node)
+                        (+ 1 examined))))))))))
 
 (defn load-graph []
   (sql/with-connection (db-connection (slurp "config/database.yml"))
