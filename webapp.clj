@@ -95,7 +95,7 @@
 (defn load-graph []
   (sql/with-connection (db-connection (slurp "config/database.yml"))
     (sql/with-query-results collaborations
-      ["select * from collaborations order by id desc limit 300"]
+      ["select * from collaborations order by id desc"]
       (reduce (fn [g collaboration]
                 (add-to-graph g
                               (node-from-author-id (collaboration :author_id))
