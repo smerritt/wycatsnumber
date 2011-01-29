@@ -64,19 +64,31 @@
 (def node-from-author-id identity)
 (def author-id-from-node identity)
 
+(defn empty-queue [] [])
+
+(defn add-to-queue [queue items]
+  (reduce (fn [acc item]
+            (conj acc item))
+          queue
+          items))
+
+(defn dequeue [queue]
+  [(queue 0)
+   (subvec queue 1)])
+
 (defn path
   ([graph src dest]
      (path graph src dest 1))
   ([graph src dest min-weight]
-     (loop [queue [src]
+     (loop [queue (add-to-queue (empty-queue) [src])
             predecessor {}
             seen (hash-set)
             examined 0]
        (if (empty? queue)
          nil
-         (let [current-node (first queue)]
+         (let [[current-node rest-of-queue] (dequeue queue)]
            (if (seen current-node)
-             (recur (subvec queue 1)
+             (recur rest-of-queue
                     predecessor
                     seen
                     examined)
@@ -94,10 +106,8 @@
                      path
                      (recur (conj path next-node)
                             (predecessor next-node))))
-                 (recur (reduce (fn [acc n]
-                                  (conj acc n))
-                                (subvec queue 1)
-                                new-neighbors)
+                 (recur (add-to-queue rest-of-queue
+                                      new-neighbors)
                         (reduce (fn [acc n]
                                   (assoc acc n current-node))
                                 predecessor
