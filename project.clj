@@ -6,6 +6,7 @@
                  [clj-yaml "0.3.0-SNAPSHOT"]
                  [compojure "0.5.2"]
                  [org.clojars.rnewman/ring "0.2.2-sessions"]
-                 [postgresql/postgresql "9.0-801.jdbc4"]]
+                 [postgresql/postgresql "9.0-801.jdbc4"]
+                 [org.danlarkin/clojure-json "1.2-SNAPSHOT"]]
   :dev-dependencies [[swank-clojure "1.2.1"]]
   :jvm-opts ["-Xmx1g"])
