@@ -223,15 +223,7 @@ Think of making a wheel out of the fns and rolling it up coll."
                                (drop 1 ids))
         author-info (author-attributes author-ids)
         project-info (project-attributes project-ids)]
-    (loop [responsifiers [author-info project-info]
-           result []
-           remaining-ids ids]
-      (if (seq remaining-ids)
-        (recur (left-rotate responsifiers)
-               (conj result
-                     ((first responsifiers) (first remaining-ids)))
-               (rest remaining-ids))
-        result))))
+    (wheel-map [author-info project-info] ids)))
 
 (defn path-between-authors
   ([author-id1 author-id2]
