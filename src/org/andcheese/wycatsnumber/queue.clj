@@ -1,6 +1,6 @@
 (ns org.andcheese.wycatsnumber.queue)
 
-(defn empty [] [])
+(defn vacant [] [])
 
 (defn add [queue items]
   (reduce (fn [acc item]

@@ -50,7 +50,7 @@
                                 (node-from-author-id (collaboration :author_id))
                                 (node-from-project-id (collaboration :project_id))
                                 (collaboration :commits)))
-              (graph/empty)
+              (graph/vacant)
               collaborations))))
 
 (defn author-name-to-id [author-name]

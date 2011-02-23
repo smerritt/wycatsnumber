@@ -1,7 +1,7 @@
 (ns org.andcheese.wycatsnumber.graph
   (:require [org.andcheese.wycatsnumber [queue :as queue]]))
 
-(defn empty []
+(defn vacant []
   {:nodes (hash-set)
    :edges {}})
 
