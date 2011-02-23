@@ -58,10 +58,8 @@
 
 ;; project IDs and author IDs can collide, but they're all natural
 ;; numbers, so we can use the whole number line to make room
-(defn node-from-project-id [project-id]
-  (- project-id))
-(defn project-id-from-node [node]
-  (- node))
+(def node-from-project-id -)
+(def project-id-from-node -)
 (def node-from-author-id identity)
 (def author-id-from-node identity)
 
