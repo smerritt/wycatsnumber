@@ -3,7 +3,8 @@
         ring.adapter.jetty)
   (:require [clj-yaml [core :as yaml]]
             [clojure.contrib [sql :as sql]]
-            [org.danlarkin [json :as json]]))
+            [org.danlarkin [json :as json]]
+            [org.andcheese.wycatsnumber [queue :as queue]]))
 
 (defn db-connection [database-yml]
     (let [env (or (System/getenv "RING_ENV")
@@ -63,29 +64,17 @@
 (def node-from-author-id identity)
 (def author-id-from-node identity)
 
-(defn empty-queue [] [])
-
-(defn add-to-queue [queue items]
-  (reduce (fn [acc item]
-            (conj acc item))
-          queue
-          items))
-
-(defn dequeue [queue]
-  [(queue 0)
-   (subvec queue 1)])
-
 (defn path
   ([graph src dest]
      (path graph src dest 1))
   ([graph src dest min-weight]
-     (loop [queue (add-to-queue (empty-queue) [src])
+     (loop [queue (queue/add (queue/empty) [src])
             predecessor {}
             seen (hash-set)
             examined 0]
        (if (empty? queue)
          nil
-         (let [[current-node rest-of-queue] (dequeue queue)]
+         (let [[current-node rest-of-queue] (queue/dequeue queue)]
            (if (seen current-node)
              (recur rest-of-queue
                     predecessor
@@ -104,8 +93,8 @@
                      path
                      (recur (conj path next-node)
                             (predecessor next-node))))
-                 (recur (add-to-queue rest-of-queue
-                                      new-neighbors)
+                 (recur (queue/add rest-of-queue
+                                   new-neighbors)
                         (reduce (fn [acc n]
                                   (assoc acc n current-node))
                                 predecessor
@@ -128,8 +117,6 @@
                               (collaboration :commits)))
               (empty-graph)
               collaborations))))
-
-(def the-graph (load-graph))
 
 (defn author-name-to-id [author-name]
   (sql/with-query-results result
@@ -214,12 +201,14 @@ Think of making a wheel out of the fns and rolling it up coll."
         project-info (project-attributes project-ids)]
     (wheel-map [author-info project-info] ids)))
 
+(def the-graph (ref (load-graph)))
+
 (defn path-between-authors
   ([author-id1 author-id2]
      (path-between-authors author-id1 author-id2 1))
   ([author-id1 author-id2 min-weight]
      (nodes-to-db-ids
-      (path the-graph author-id1 author-id2 min-weight))))
+      (path @the-graph author-id1 author-id2 min-weight))))
 
 (defn handle-path-request [author-name1 author-name2]
   (with-db

@@ -1,6 +1,7 @@
 (defproject wycatsnumber "0.0.1"
   :description "Find a shortest path between two devs as measured by Github commits"
   :url "https://github.com/smerritt/wycatsnumber"
+  :source-path "src"
   :dependencies [[org.clojure/clojure "1.2.0"]
                  [org.clojure/clojure-contrib "1.2.0"]
                  [clj-yaml "0.3.0-SNAPSHOT"]
