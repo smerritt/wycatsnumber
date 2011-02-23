@@ -4,7 +4,7 @@
   (:require [clj-yaml [core :as yaml]]
             [clojure.contrib [sql :as sql]]
             [org.danlarkin [json :as json]]
-            [org.andcheese.wycatsnumber [queue :as queue]]))
+            [org.andcheese.wycatsnumber [graph :as graph]]))
 
 (defn db-connection [database-yml]
     (let [env (or (System/getenv "RING_ENV")
@@ -30,77 +30,12 @@
        :password db-pass
        }))
 
-(defn empty-graph []
-  {:nodes (sorted-set)
-   :edges {}})
-
-(defn add-to-graph [graph node1 node2 weight]
-  {:nodes (conj (graph :nodes)
-                node1
-                node2)
-   :edges (assoc (graph :edges)
-            ;; NB: graph is undirected
-            node1
-            (conj (get (graph :edges)
-                       node1
-                       {})
-                  [node2 weight])
-            node2
-            (conj (get (graph :edges)
-                       node2
-                       {})
-                  [node1 weight]))})
-
-(defn neighbors [graph node]
-  ((graph :edges)
-   node
-   {}))
-
-
 ;; project IDs and author IDs can collide, but they're all natural
 ;; numbers, so we can use the whole number line to make room
 (def node-from-project-id -)
 (def project-id-from-node -)
 (def node-from-author-id identity)
 (def author-id-from-node identity)
-
-(defn path
-  ([graph src dest]
-     (path graph src dest 1))
-  ([graph src dest min-weight]
-     (loop [queue (queue/add (queue/empty) [src])
-            predecessor {}
-            seen (hash-set)
-            examined 0]
-       (if (empty? queue)
-         nil
-         (let [[current-node rest-of-queue] (queue/dequeue queue)]
-           (if (seen current-node)
-             (recur rest-of-queue
-                    predecessor
-                    seen
-                    examined)
-             (let [new-neighbors (map first
-                                      (filter (fn [[neighbor, edge-weight]]
-                                                (and (not (= neighbor src))
-                                                     (>= edge-weight min-weight)
-                                                     (not (predecessor neighbor))))
-                                              (neighbors graph current-node)))]
-               (if (= current-node dest)
-                 (loop [path [current-node]
-                        next-node (predecessor current-node)]
-                   (if (not next-node)
-                     path
-                     (recur (conj path next-node)
-                            (predecessor next-node))))
-                 (recur (queue/add rest-of-queue
-                                   new-neighbors)
-                        (reduce (fn [acc n]
-                                  (assoc acc n current-node))
-                                predecessor
-                                new-neighbors)
-                        (conj seen current-node)
-                        (+ 1 examined))))))))))
 
 (defmacro with-db [& body]
   `(sql/with-connection (db-connection (slurp "config/database.yml"))
@@ -111,11 +46,11 @@
     (sql/with-query-results collaborations
       ["select * from collaborations order by id desc"]
       (reduce (fn [g collaboration]
-                (add-to-graph g
-                              (node-from-author-id (collaboration :author_id))
-                              (node-from-project-id (collaboration :project_id))
-                              (collaboration :commits)))
-              (empty-graph)
+                (graph/add-edge g
+                                (node-from-author-id (collaboration :author_id))
+                                (node-from-project-id (collaboration :project_id))
+                                (collaboration :commits)))
+              (graph/empty)
               collaborations))))
 
 (defn author-name-to-id [author-name]
@@ -208,7 +143,7 @@ Think of making a wheel out of the fns and rolling it up coll."
      (path-between-authors author-id1 author-id2 1))
   ([author-id1 author-id2 min-weight]
      (nodes-to-db-ids
-      (path @the-graph author-id1 author-id2 min-weight))))
+      (graph/path @the-graph author-id1 author-id2 min-weight))))
 
 (defn handle-path-request [author-name1 author-name2]
   (with-db
