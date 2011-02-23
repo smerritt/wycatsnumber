@@ -2,7 +2,7 @@
   (:require [org.andcheese.wycatsnumber [queue :as queue]]))
 
 (defn empty []
-  {:nodes (sorted-set)
+  {:nodes (hash-set)
    :edges {}})
 
 (defn add-edge [graph node1 node2 weight]
