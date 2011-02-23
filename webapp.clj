@@ -209,8 +209,7 @@ Think of making a wheel out of the fns and rolling it up coll."
   ;; ids is a seq of (author-id, project-id, author-id, project-id,
   ;; ...)
   (let [author-ids (every-nth 2 ids)
-        project-ids (every-nth 2
-                               (drop 1 ids))
+        project-ids (every-nth 2 (drop 1 ids))
         author-info (author-attributes author-ids)
         project-info (project-attributes project-ids)]
     (wheel-map [author-info project-info] ids)))
