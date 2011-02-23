@@ -203,15 +203,7 @@ Think of making a wheel out of the fns and rolling it up coll."
       '())))
 
 (defn nodes-to-db-ids [nodes]
-  (loop [fixers [author-id-from-node project-id-from-node]
-         db-ids []
-         nodes nodes]
-    (if (seq nodes)
-      (recur (left-rotate fixers)
-             (conj db-ids
-                   ((first fixers) (first nodes)))
-             (rest nodes))
-      db-ids)))
+  (wheel-map [author-id-from-node project-id-from-node] nodes))
 
 (defn api-responsify [ids]
   ;; ids is a seq of (author-id, project-id, author-id, project-id,
