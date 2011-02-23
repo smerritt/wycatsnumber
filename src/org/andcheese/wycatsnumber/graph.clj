@@ -2,27 +2,45 @@
   (:require [org.andcheese.wycatsnumber [queue :as queue]]))
 
 (defn vacant []
+  "Graph with no nodes and no edges. Just a skeleton."
   {:nodes (hash-set)
    :edges {}})
 
 (defn add-edge [graph node1 node2 weight]
-  {:nodes (conj (graph :nodes)
-                node1
-                node2)
-   :edges (assoc (graph :edges)
-            ;; NB: graph is undirected
-            node1
-            (conj (get (graph :edges)
-                       node1
-                       {})
-                  [node2 weight])
-            node2
-            (conj (get (graph :edges)
-                       node2
-                       {})
-                  [node1 weight]))})
+  "Add an edge (node1 -> node2) and (node2 -> node1) with the given weight.
+
+If node1 or node2 don't exist in the graph, they will be added."
+  (conj-edge (conj-edge (conj-node (conj-node graph
+                                              node1)
+                                   node2)
+                        node1
+                        node2
+                        weight)
+             node2
+             node1
+             weight))
+
+(defn conj-edge [graph node1 node2 weight]
+  "Internal utility function.
+
+Add an edge from node1 to node2 with the given weight."
+  (update-in graph
+             [:edges node1]
+             assoc
+             node2
+             weight))
+
+(defn conj-node [graph node]
+  "Internal utility function.
+
+Add node to graph."
+  (update-in graph
+             [:nodes]
+             #(conj %1 %2)
+             node))
 
 (defn neighbors [graph node]
+  "Returns neighbors of node + their edge-weights as a seq of [neighbor, weight] pairs."
   ((graph :edges)
    node
    {}))
