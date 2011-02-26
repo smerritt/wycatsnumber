@@ -1,7 +1,7 @@
 class Author
   include DataMapper::Resource
 
-  COMMIT_RANGE = 1..12
+  MIN_AGE_FOR_FETCH = 60*60*24*7   # one week old
 
   property :id,              Serial
   property :github_username, String,  :required => true, :length => 255, :index => true
@@ -29,7 +29,7 @@ class Author
   end
 
   def needs_fetch?
-    !fetched_at || (Time.now - fetched_at.to_time >= 60*60*24*7)   # at least a week old
+    !fetched_at || (Time.now - fetched_at.to_time >= MIN_AGE_FOR_FETCH)
   end
 
   def fetched!

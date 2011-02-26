@@ -71,11 +71,17 @@ describe 'WalkRepo#perform' do
     lambda { WalkRepo.perform(@repo) }.should change(Project, :count).by(1)
   end
 
-  it "does nothing if the project exists" do
+  it "doesn't double-create projects" do
+    repo_has_collaborators(%w[zoidberg])
+    lambda do
+      2.times { WalkRepo.perform(@repo) }
+    end.should change(Project, :count).by(1)
+  end
+
+  it "does nothing if the project exists and has been fetched recently" do
     repo_has_collaborators(%w[zoidberg])
     project = Project.gen(:name => @repo)
-
-    # this shouldn't happen, but in case it does, don't screw up the DB
+    project.fetched!
 
     Resque.should_not_receive(:enqueue)
     lambda do
@@ -86,6 +92,29 @@ describe 'WalkRepo#perform' do
 
   end
 
+  it "updates #fetched_at" do
+    repo_has_collaborators(%w[dontcare])
+
+    project = Project.gen(:name => @repo, :fetched_at => Time.now - 60*60*24*10)
+
+    now = Time.now
+    Time.stub!(:now).and_return(now)
+
+    lambda do
+      WalkRepo.perform(@repo)
+    end.should change { project.reload.fetched_at }.to(now.to_datetime)
+  end
+
+  it "does nothing if the project has been recently fetched" do
+    repo_has_collaborators(%w[zoidberg])
+    project = Project.gen(:name => @repo, :fetched_at => Time.now - 5)
+
+    lambda do
+      WalkRepo.perform(@repo)
+    end.should_not change { project.reload.fetched_at }
+
+  end
+
   it "includes gravatar ids" do
     repo_has_collaborators(%w[alice])
 
@@ -93,7 +122,6 @@ describe 'WalkRepo#perform' do
 
     Author.first(:github_username => 'alice').gravatar_id.should ==
       "6384e2b2184bcbf58eccf10ca7a6563c"   # md5sum of 'alice'
-
   end
 
 end
