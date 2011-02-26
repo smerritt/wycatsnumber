@@ -2,7 +2,7 @@ class WN
   module TransactionalRunner
     def self.included(base)
 
-      base.prepend_before(:each) do
+      base.before(:each) do
         repository(:default) do
           transaction = DataMapper::Transaction.new(repository)
           transaction.begin
@@ -10,7 +10,7 @@ class WN
         end
       end
 
-      base.append_after(:each) do
+      base.after(:each) do
         repository(:default) do
           if repository.adapter.current_transaction
             repository.adapter.current_transaction.rollback

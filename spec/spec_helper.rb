@@ -1,5 +1,6 @@
 ENV["RACK_ENV"] = 'test'
-require 'spec'
+require 'rspec'
+
 require 'wycatsnumber'
 Bundler.setup(:test)
 Bundler.require(:test)
@@ -8,7 +9,7 @@ Bundler.require(:test)
 # in ./support/ and its subdirectories.
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 
-Spec::Runner.configure do |config|
+RSpec.configure do |config|
   config.include WN::TransactionalRunner
 
   config.after(:each) { FakeWeb.clean_registry }

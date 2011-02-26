@@ -21,7 +21,7 @@ gem 'resque'
 gem 'SystemTimer'
 
 group(:test) do
-  gem 'rspec',              '~>1.3.0'
+  gem 'rspec',              '~>2.5.0'
   gem 'ruby-debug'
   gem 'dm-sweatshop',       dm_version
   gem 'fakeweb'

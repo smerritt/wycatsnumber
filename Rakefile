@@ -3,10 +3,10 @@ require 'resque/tasks'
 desc 'Default: run spec examples'
 task :default => :spec
 
-require 'spec/rake/spectask'
-Spec::Rake::SpecTask.new do |t|
-  t.spec_opts << %w(-fs --color)
-  t.spec_files = Dir["spec/**/*_spec.rb"]
+require 'rspec/core/rake_task'
+RSpec::Core::RakeTask.new(:spec) do |t|
+  t.rspec_opts = %w(-fs --color)
+  t.pattern = "spec/**/*_spec.rb"
 end
 
 namespace :resque do
