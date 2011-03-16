@@ -14,6 +14,8 @@ end
 
 namespace :resque do
   task :setup do
+    $LOAD_PATH.unshift(File.dirname(__FILE__))
+    $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), 'app'))
     require 'wycatsnumber'
   end
 end
