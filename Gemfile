@@ -17,7 +17,8 @@ gem 'dm-postgres-adapter',  dm_version
 gem 'rake'
 gem 'json'
 gem 'rest-client',          '~>1.6.0'
-gem 'resque'
+gem 'resque',               '~>1.13.0'
+gem 'sinatra',              '~> 0.9.2'
 
 group(:test) do
   gem 'rspec',              '~>2.5.0'
