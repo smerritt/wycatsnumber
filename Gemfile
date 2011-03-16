@@ -18,7 +18,6 @@ gem 'rake'
 gem 'json'
 gem 'rest-client',          '~>1.6.0'
 gem 'resque'
-gem 'SystemTimer'
 
 group(:test) do
   gem 'rspec',              '~>2.5.0'
