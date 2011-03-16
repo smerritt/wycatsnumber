@@ -1,12 +1,15 @@
 require 'resque/tasks'
 
-desc 'Default: run spec examples'
-task :default => :spec
+begin
+  desc 'Default: run spec examples'
+  task :default => :spec
 
-require 'rspec/core/rake_task'
-RSpec::Core::RakeTask.new(:spec) do |t|
-  t.rspec_opts = %w(-fs --color)
-  t.pattern = "spec/**/*_spec.rb"
+  require 'rspec/core/rake_task'
+  RSpec::Core::RakeTask.new(:spec) do |t|
+    t.rspec_opts = %w(-fs --color)
+    t.pattern = "spec/**/*_spec.rb"
+  end
+rescue LoadError
 end
 
 namespace :resque do
