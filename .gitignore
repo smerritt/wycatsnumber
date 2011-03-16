@@ -1,4 +1,5 @@
 .bundle/
+vendor/bundle/
 config/database.yml
 config/endpoints.yml
 *.db
