@@ -33,3 +33,10 @@ task :refresh => 'resque:setup' do
     Resque.enqueue(WalkProject, project.name)
   end
 end
+
+namespace :db do
+  task :migrate => 'resque:setup' do
+    # hokey, but good enough for now
+    DataMapper.auto_upgrade!
+  end
+end
