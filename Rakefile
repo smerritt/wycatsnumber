@@ -20,14 +20,11 @@ namespace :resque do
   end
 end
 
-task :kickoff do
-  require 'wycatsnumber'
+task :kickoff => 'resque:setup' do
   Resque.enqueue(WalkRepo, 'rails/rails')
 end
 
-task :refresh do
-  require 'wycatsnumber'
-
+task :refresh => 'resque:setup' do
   Author.needs_fetch.each do |author|
     Resque.enqueue(WalkUser, author.github_username)
   end
