@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 module Github
   module Fetcher
 
@@ -23,6 +24,12 @@ module Github
 
           Log.debug "Fetching #{url}"
           result = RestClient.get(url, :host => 'github.com')
+
+          # Make names like "José" not blow up in JSON decoding
+          if result.respond_to?(:force_encoding)
+            result.force_encoding("UTF-8")
+          end
+
           Log.debug "Fetching #{url} successful"
           result
         rescue RestClient::ResourceNotFound
