@@ -14,6 +14,10 @@ class Project
     !fetched_at || (Time.now - fetched_at.to_time >= MIN_AGE_FOR_FETCH)
   end
 
+  def self.needs_fetch
+    all(:fetched_at.lt => Time.now - MIN_AGE_FOR_FETCH)
+  end
+
   def fetched!
     update(:fetched_at => Time.now)
   end

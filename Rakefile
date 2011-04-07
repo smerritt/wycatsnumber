@@ -24,3 +24,15 @@ task :kickoff do
   require 'wycatsnumber'
   Resque.enqueue(WalkRepo, 'rails/rails')
 end
+
+task :refresh do
+  require 'wycatsnumber'
+
+  Author.needs_fetch.each do |author|
+    Resque.enqueue(WalkUser, author.github_username)
+  end
+
+  Project.needs_fetch.each do |project|
+    Resque.enqueue(WalkProject, project.name)
+  end
+end

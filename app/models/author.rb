@@ -28,6 +28,10 @@ class Author
     create(:github_username => user.name, :gravatar_id => user.gravatar_id)
   end
 
+  def self.needs_fetch
+    all(:fetched_at.lt => Time.now - MIN_AGE_FOR_FETCH)
+  end
+
   def needs_fetch?
     !fetched_at || (Time.now - fetched_at.to_time >= MIN_AGE_FOR_FETCH)
   end
