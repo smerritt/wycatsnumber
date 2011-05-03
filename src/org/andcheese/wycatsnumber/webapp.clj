@@ -145,25 +145,31 @@ Think of making a wheel out of the fns and rolling it up coll."
      (nodes-to-db-ids
       (graph/path @the-graph author-id1 author-id2 min-weight))))
 
-(defn handle-path-request [author-name1 author-name2]
-  (with-db
-         (let [author-id1 (author-name-to-id author-name1)
-               author-id2 (author-name-to-id author-name2)]
-           (if (or (nil? author-id1)
-                   (nil? author-id2))
-             (let [unknown-authors (map first
-                                        (filter #(nil? (second %1))
-                                                [[author-name1 author-id1]
-                                                 [author-name2 author-id2]]))]
-               {:status 404
-                :body (json/encode {:unknown-authors unknown-authors})})
-             (json/encode
-              (api-responsify
-               (path-between-authors author-id1
-                                     author-id2)))))))
+(defn handle-path-request
+  ([author-name1 author-name2]
+     (handle-path-request author-name1 author-name2 1))
+  ([author-name1 author-name2 min-weight]
+     (with-db
+       (let [author-id1 (author-name-to-id author-name1)
+             author-id2 (author-name-to-id author-name2)]
+         (if (or (nil? author-id1)
+                 (nil? author-id2))
+           (let [unknown-authors (map first
+                                      (filter #(nil? (second %1))
+                                              [[author-name1 author-id1]
+                                               [author-name2 author-id2]]))]
+             {:status 404
+              :body (json/encode {:unknown-authors unknown-authors})})
+           (json/encode
+            (api-responsify
+             (path-between-authors author-id1
+                                   author-id2
+                                   min-weight))))))))
 
 (defroutes api-routes
   (GET "/" []
        "Hello World")
   (GET "/path/:author1/:author2" [author1 author2]
-       (handle-path-request author1 author2)))
+       (handle-path-request author1 author2))
+  (GET "/path/:author1/:author2/:weight" [author1 author2 weight]
+       (handle-path-request author1 author2 (Integer/parseInt weight))))
