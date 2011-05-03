@@ -1,4 +1,4 @@
-(ns wycatsnumber
+(ns org.andcheese.wycatsnumber.webapp
   (:use compojure.core
         ring.adapter.jetty)
   (:require [clj-yaml [core :as yaml]]
@@ -162,10 +162,8 @@ Think of making a wheel out of the fns and rolling it up coll."
                (path-between-authors author-id1
                                      author-id2)))))))
 
-(defroutes sixdegrees
+(defroutes api-routes
   (GET "/" []
        "Hello World")
   (GET "/path/:author1/:author2" [author1 author2]
        (handle-path-request author1 author2)))
-
-(run-jetty sixdegrees {:port 8080})

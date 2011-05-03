@@ -6,20 +6,6 @@
   {:nodes (hash-set)
    :edges {}})
 
-(defn add-edge [graph node1 node2 weight]
-  "Add an edge (node1 -> node2) and (node2 -> node1) with the given weight.
-
-If node1 or node2 don't exist in the graph, they will be added."
-  (conj-edge (conj-edge (conj-node (conj-node graph
-                                              node1)
-                                   node2)
-                        node1
-                        node2
-                        weight)
-             node2
-             node1
-             weight))
-
 (defn conj-edge [graph node1 node2 weight]
   "Internal utility function.
 
@@ -38,6 +24,20 @@ Add node to graph."
              [:nodes]
              #(conj %1 %2)
              node))
+
+(defn add-edge [graph node1 node2 weight]
+  "Add an edge (node1 -> node2) and (node2 -> node1) with the given weight.
+
+If node1 or node2 don't exist in the graph, they will be added."
+  (conj-edge (conj-edge (conj-node (conj-node graph
+                                              node1)
+                                   node2)
+                        node1
+                        node2
+                        weight)
+             node2
+             node1
+             weight))
 
 (defn neighbors [graph node]
   "Returns neighbors of node + their edge-weights as a seq of [neighbor, weight] pairs."
