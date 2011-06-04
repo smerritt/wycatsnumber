@@ -30,7 +30,7 @@ task :refresh => 'resque:setup' do
   end
 
   Project.needs_fetch.each do |project|
-    Resque.enqueue(WalkProject, project.name)
+    Resque.enqueue(WalkRepo, project.name)
   end
 end
 
