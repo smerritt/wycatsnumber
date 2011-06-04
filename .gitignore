@@ -1,7 +1,10 @@
 .bundle/
 vendor/bundle/
+classes/
 config/database.yml
 config/endpoints.yml
 *.db
 *.log
 *.rdb
+*.war
+src/org/andcheese/wycatsnumber/db.clj

@@ -4,31 +4,9 @@
   (:require [clj-yaml [core :as yaml]]
             [clojure.contrib [sql :as sql]]
             [org.danlarkin [json :as json]]
-            [org.andcheese.wycatsnumber [graph :as graph]]))
-
-(defn db-connection [database-yml]
-    (let [env (or (System/getenv "RING_ENV")
-                  "development")
-          ;; This config/database.yml is for a Rails web app, and so has
-          ;; keys like ":test", ":development", which get translated into
-          ;; Clojure keywords.
-          config ((yaml/parse-string database-yml)
-                  (keyword env))
-          db-host (config (keyword "host"))
-          db-user (config (keyword "user"))
-          db-pass (config (keyword "password"))
-          db-name (config (keyword "database"))]
-      {
-       ;; just hardcode this one; I don't have the patience to
-       ;; translate Ruby class names to Java ones. It's not a
-       ;; simple transformation, either.
-       :classname "org.postgresql.Driver"
-
-       :subprotocol "postgresql"
-       :subname (str "//" db-host ":5432/" db-name)
-       :user db-user
-       :password db-pass
-       }))
+            [org.andcheese.wycatsnumber
+             [graph :as graph]
+             [db :as db]]))
 
 ;; project IDs and author IDs can collide, but they're all natural
 ;; numbers, so we can use the whole number line to make room
@@ -38,7 +16,7 @@
 (def author-id-from-node identity)
 
 (defmacro with-db [& body]
-  `(sql/with-connection (db-connection (slurp "config/database.yml"))
+  `(sql/with-connection db/connection
      ~@body))
 
 (defn load-graph []
