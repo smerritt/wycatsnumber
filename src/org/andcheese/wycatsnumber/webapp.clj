@@ -136,7 +136,7 @@ Think of making a wheel out of the fns and rolling it up coll."
         project-info (project-attributes project-ids)]
     (wheel-map [author-info project-info] ids)))
 
-(def the-graph (ref (load-graph)))
+(def the-graph (ref (graph/vacant)))
 
 (defn path-between-authors
   ([author-id1 author-id2]
@@ -173,3 +173,7 @@ Think of making a wheel out of the fns and rolling it up coll."
        (handle-path-request author1 author2))
   (GET "/path/:author1/:author2/:weight" [author1 author2 weight]
        (handle-path-request author1 author2 (Integer/parseInt weight))))
+
+(defn init-world []
+  (dosync
+   (ref-set the-graph (load-graph))))

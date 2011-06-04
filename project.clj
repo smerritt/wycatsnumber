@@ -10,6 +10,7 @@
                  [postgresql/postgresql "9.0-801.jdbc4"]
                  [org.danlarkin/clojure-json "1.2-SNAPSHOT"]]
   :dev-dependencies [[swank-clojure "1.2.1"]
-                     [lein-ring "0.4.0"]]
-  :ring {:handler org.andcheese.wycatsnumber.webapp/api-routes}
+                     [lein-ring "0.4.3"]]
+  :ring {:handler org.andcheese.wycatsnumber.webapp/api-routes
+         :init org.andcheese.wycatsnumber.webapp/init-world}
   :jvm-opts ["-Xmx384m"])
