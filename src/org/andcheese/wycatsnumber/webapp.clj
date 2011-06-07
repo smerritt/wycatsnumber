@@ -123,6 +123,13 @@ Think of making a wheel out of the fns and rolling it up coll."
      (nodes-to-db-ids
       (graph/path @the-graph author-id1 author-id2 min-weight))))
 
+(defn json-response
+  ([body] {:headers {"Content-Type" "application/json"}
+           :body (json/encode body)})
+  ([status body]
+     (assoc (json-response body)
+       :status 404)))
+
 (defn handle-path-request
   ([author-name1 author-name2]
      (handle-path-request author-name1 author-name2 1))
@@ -136,9 +143,10 @@ Think of making a wheel out of the fns and rolling it up coll."
                                       (filter #(nil? (second %1))
                                               [[author-name1 author-id1]
                                                [author-name2 author-id2]]))]
-             {:status 404
-              :body (json/encode {:unknown-authors unknown-authors})})
-           (json/encode
+
+             (json-response 404
+                            {:unknown-authors unknown-authors}))
+           (json-response
             (api-responsify
              (path-between-authors author-id1
                                    author-id2
