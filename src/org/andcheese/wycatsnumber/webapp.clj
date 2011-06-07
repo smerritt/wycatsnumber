@@ -150,7 +150,8 @@ Think of making a wheel out of the fns and rolling it up coll."
   (GET "/path/:author1/:author2" [author1 author2]
        (handle-path-request author1 author2))
   (GET "/path/:author1/:author2/:weight" [author1 author2 weight]
-       (handle-path-request author1 author2 (Integer/parseInt weight))))
+       (handle-path-request author1 author2 (Integer/parseInt weight)))
+  (ANY "*" [request] (fn [request] (str request))))
 
 (defn init-world []
   (dosync
