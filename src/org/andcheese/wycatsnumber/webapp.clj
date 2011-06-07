@@ -153,6 +153,26 @@ Think of making a wheel out of the fns and rolling it up coll."
        (handle-path-request author1 author2 (Integer/parseInt weight)))
   (ANY "*" [request] (fn [request] (str request))))
 
+(defn remove-context [handler]
+  "Strips the servlet-context part out of the request map
+   so that your routes still work when deployed in a
+   servlet container."
+  (fn [request]
+    (if-let [context (:context request)]
+      (let [uri (:uri request)]
+        (if (.startsWith uri context)
+          (let [minus-context (.substring uri
+                                          (.length context))
+                uri-minus-context (if (= "" minus-context)
+                                    "/"
+                                    minus-context)]
+            (handler (assoc request
+                       :uri uri-minus-context)))
+          (handler request)))
+      (handler request))))
+
+(wrap! api-routes remove-context)
+
 (defn init-world []
   (dosync
    (ref-set the-graph (load-graph))))
