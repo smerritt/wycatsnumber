@@ -8,3 +8,5 @@ config/endpoints.yml
 *.rdb
 *.war
 src/org/andcheese/wycatsnumber/db.clj
+lib/
+lib/**/*.jar
