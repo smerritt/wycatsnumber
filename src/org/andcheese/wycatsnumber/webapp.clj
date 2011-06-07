@@ -159,7 +159,22 @@ Think of making a wheel out of the fns and rolling it up coll."
        (handle-path-request author1 author2))
   (GET "/path/:author1/:author2/:weight" [author1 author2 weight]
        (handle-path-request author1 author2 (Integer/parseInt weight)))
-  (ANY "*" [request] (fn [request] (str request))))
+  (ANY "*" [request] (fn [request] {:status 404
+                                    :body (str request)})))
+
+(defn jsonp-ify [handler]
+  "If the response is JSON and the request contains the 'jsonp' parameter
+  wraps the response body, e.g. \"$jsonp($response)\")"
+  (fn [request]
+    (if-let [jsonp (get-in request
+                           [:query-params "jsonp"])]
+      (let [response (handler request)]
+        (if (= "application/json"
+               (get-in response [:headers "Content-Type"]))
+          (assoc response
+            :body (str jsonp "(" (response :body) ")"))
+          (handler request)))
+      (handler request))))
 
 (defn remove-context [handler]
   "Strips the servlet-context part out of the request map
@@ -179,7 +194,7 @@ Think of making a wheel out of the fns and rolling it up coll."
           (handler request)))
       (handler request))))
 
-(wrap! api-routes remove-context)
+(wrap! api-routes remove-context jsonp-ify)
 
 (defn init-world []
   (dosync
