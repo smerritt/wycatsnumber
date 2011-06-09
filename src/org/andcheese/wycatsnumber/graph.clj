@@ -29,15 +29,11 @@ Add node to graph."
   "Add an edge (node1 -> node2) and (node2 -> node1) with the given weight.
 
 If node1 or node2 don't exist in the graph, they will be added."
-  (conj-edge (conj-edge (conj-node (conj-node graph
-                                              node1)
-                                   node2)
-                        node1
-                        node2
-                        weight)
-             node2
-             node1
-             weight))
+  (-> graph
+      (conj-node node1)
+      (conj-node node2)
+      (conj-edge node1 node2 weight)
+      (conj-edge node2 node1 weight)))
 
 (defn neighbors [graph node]
   "Returns neighbors of node + their edge-weights as a seq of [neighbor, weight] pairs."
