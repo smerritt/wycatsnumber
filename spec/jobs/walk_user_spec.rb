@@ -105,8 +105,17 @@ describe 'WalkUser#perform' do
     WalkUser.perform('smerritt')
   end
 
+  it "does not walk fresh projects" do
+    Project.gen(:name => 'smerritt/spiffy-elisp', :fetched_at => Time.now)
+
+    Resque.should_not_receive(:enqueue).with(WalkRepo, "smerritt/spiffy-elisp")
+    Resque.stub!(:enqueue)
+
+    WalkUser.perform('smerritt')
+  end
+
   it "updates #fetched_at" do
-    @author.update(:fetched_at => Time.now - 60*60*24*8)  # 8 days ago
+    @author.update(:fetched_at => Time.now - 8*DAY)
     now = Time.now
     Time.stub!(:now).and_return(now)
 

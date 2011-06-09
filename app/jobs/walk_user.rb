@@ -11,14 +11,26 @@ class WalkUser
     Log.info "walking user #{username}"
     (user.owned_repos + user.unowned_watched_repos).each do |repo|
       if repo.fork?
-        Log.info "enqueuing FindParentRepo(#{repo.name})"
-        Resque.enqueue(FindParentRepo, repo.name)
+        consider_fork(repo)
       else
-        Log.info "enqueuing WalkRepo(#{repo.name})"
-        Resque.enqueue(WalkRepo, repo.name)
+        consider_repo(repo)
       end
     end
     author.fetched!
+  end
+
+  def self.consider_fork(repo)
+    Log.info "enqueuing FindParentRepo(#{repo.name})"
+    Resque.enqueue(FindParentRepo, repo.name)
+  end
+
+  def self.consider_repo(repo)
+    if !(p = Project.first(:name => repo.name)) || p.needs_fetch?
+      Log.info "enqueuing WalkRepo(#{repo.name})"
+      Resque.enqueue(WalkRepo, repo.name)
+    else
+      Log.info "Project (#{repo.name}) is fresh; skipping"
+    end
   end
 
 end
