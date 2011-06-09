@@ -49,21 +49,31 @@ describe 'WalkRepo#perform' do
     WalkRepo.perform(@repo)
   end
 
+  it "enqueues stale old users for walking" do
+    repo_has_collaborators(%w[alice])
+    Author.gen(:github_username => 'alice',
+      :fetched_at => Time.now - 300*DAY)
+
+    Resque.should_receive(:enqueue).with(WalkUser, 'alice')
+
+    WalkRepo.perform(@repo)
+  end
+
+  it "does not enqueue fresh users for walking" do
+    repo_has_collaborators(%w[bob])
+    Author.gen(:github_username => 'bob',
+      :fetched_at => Time.now - 1)
+
+    Resque.should_not_receive(:enqueue).with(WalkUser, 'bob')
+
+    WalkRepo.perform(@repo)
+  end
+
   it "does not create duplicate authors" do
     alice = Author.gen(:github_username => 'alice')
 
     repo_has_collaborators(%w[alice bob])
     lambda { WalkRepo.perform(@repo) }.should change(Author, :count).by(1)
-  end
-
-  it "does not enqueue existing users for walking" do
-    alice = Author.gen(:github_username => 'alice')
-    repo_has_collaborators(%w[alice bob])
-
-    Resque.should_receive(:enqueue).with(WalkUser, 'bob')
-    Resque.should_not_receive(:enqueue).with(WalkUser, 'alice')
-
-    WalkRepo.perform(@repo)
   end
 
   it "creates the project" do
@@ -95,7 +105,7 @@ describe 'WalkRepo#perform' do
   it "updates #fetched_at" do
     repo_has_collaborators(%w[dontcare])
 
-    project = Project.gen(:name => @repo, :fetched_at => Time.now - 60*60*24*10)
+    project = Project.gen(:name => @repo, :fetched_at => Time.now - DAY*10)
 
     now = Time.now
     Time.stub!(:now).and_return(now)
@@ -112,7 +122,6 @@ describe 'WalkRepo#perform' do
     lambda do
       WalkRepo.perform(@repo)
     end.should_not change { project.reload.fetched_at }
-
   end
 
   it "includes gravatar ids" do

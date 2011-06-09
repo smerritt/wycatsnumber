@@ -5,6 +5,10 @@ require 'wycatsnumber'
 Bundler.setup(:test)
 Bundler.require(:test)
 
+MINUTE = 60
+HOUR = MINUTE * 60
+DAY = HOUR * 24
+
 # Requires supporting files with custom matchers and macros, etc,
 # in ./support/ and its subdirectories.
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}

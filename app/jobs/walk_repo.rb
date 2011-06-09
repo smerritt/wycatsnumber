@@ -22,10 +22,11 @@ class WalkRepo
 
     Github::Repo.new(project.name).contributors.map do |(user, commit_count)|
       author = if a = Author.from_github_user(user)
+                 consider_walking_user(user)
                  a
                else
                  a = Author.create_from_github_user(user)
-                 walk_user_later(user)
+                 consider_walking_user(user)
                  a
                end
       author.worked_on(project, commit_count)
@@ -35,8 +36,13 @@ class WalkRepo
   end
 
   private
-  def self.walk_user_later(user)
-    Resque.enqueue(WalkUser, user.name)
+  def self.consider_walking_user(user)
+    if !(a = Author.first(:github_username => user.name)) || a.needs_fetch?
+      Log.info("enqueuing WalkUser(#{user.name})")
+      Resque.enqueue(WalkUser, user.name)
+    else
+      Log.info("Author #{user.name} is fresh; skipping")
+    end
   end
 
 end
