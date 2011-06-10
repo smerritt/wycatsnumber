@@ -19,17 +19,28 @@
   `(sql/with-connection db/connection
      ~@body))
 
-(defn load-graph []
+(defn load-graph-into [ref]
+  "Load collaborations into a graph. The idea is to update our one big cached graph
+   in-place, instead of building a whole second copy and swapping it out. Keeps memory
+   usage lower."
   (with-db
     (sql/with-query-results collaborations
       ["select * from collaborations order by id desc"]
-      (reduce (fn [g collaboration]
-                (graph/add-edge g
-                                (node-from-author-id (collaboration :author_id))
-                                (node-from-project-id (collaboration :project_id))
-                                (collaboration :commits)))
-              (graph/vacant)
-              collaborations))))
+      (loop [collab-sets (partition 1000 collaborations)]
+        (if (empty? collab-sets)
+          nil
+          (let [collab-set (first collab-sets)]
+            (dosync
+             (loop [cs collab-set]
+               (if (empty? cs)
+                 nil
+                 (let [c (first cs)]
+                   (alter ref graph/add-edge
+                          (node-from-author-id (c :author_id))
+                          (node-from-project-id (c :project_id))
+                          (c :commits))
+                   (recur (rest cs))))))
+            (recur (rest collab-sets))))))))
 
 (defn author-name-to-id [author-name]
   (sql/with-query-results result
@@ -225,8 +236,7 @@ Think of making a wheel out of the fns and rolling it up coll."
 (wrap! api-routes remove-context jsonp-ify)
 
 (defn init-graph []
-  (dosync
-   (ref-set the-graph (load-graph))))
+  (load-graph-into the-graph))
 
 (defn periodically-refresh-graph [interval]
   "Refresh the graph every interval milliseconds."
