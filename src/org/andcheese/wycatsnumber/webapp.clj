@@ -152,6 +152,24 @@ Think of making a wheel out of the fns and rolling it up coll."
                                    author-id2
                                    min-weight))))))))
 
+(defn handle-friend-request
+  ([author-name distance]
+     (handle-friend-request author-name distance 0))
+  ([author-name distance min-weight]
+     (with-db
+       (if-let [author-id (author-name-to-id author-name)]
+         (->> (graph/bfs-from @the-graph
+                              (node-from-author-id author-id)
+                              min-weight)
+              (take-while #(<= (% :depth)
+                               (* 2 distance)))
+              (filter #(= (* 2 distance)
+                          (% :depth)))
+              (map #(author-id-from-node (% :node)))
+              (author-attributes)
+              (json-response))
+         (json-response 404 {:unknown-authors [author-name]})))))
+
 (defroutes api-routes
   (GET "/" []
        "Hello World")
@@ -159,6 +177,14 @@ Think of making a wheel out of the fns and rolling it up coll."
        (handle-path-request author1 author2))
   (GET "/path/:author1/:author2/:weight" [author1 author2 weight]
        (handle-path-request author1 author2 (Integer/parseInt weight)))
+  (GET "/friends/:author" [author]
+       (handle-friend-request author 1))
+  (GET "/friends/:author/:weight" [author weight]
+       (handle-friend-request author 1 (Integer/parseInt weight)))
+  (GET "/foaf/:author" [author]
+       (handle-friend-request author 2))
+  (GET "/foaf/:author/:weight" [author weight]
+       (handle-friend-request author 2 (Integer/parseInt weight)))
   (ANY "*" [request] (fn [request] {:status 404
                                     :body (str request)})))
 
@@ -179,7 +205,9 @@ Think of making a wheel out of the fns and rolling it up coll."
 (defn remove-context [handler]
   "Strips the servlet-context part out of the request map
    so that your routes still work when deployed in a
-   servlet container."
+   servlet container.
+
+  Does nothing to help you generate self-referential links."
   (fn [request]
     (if-let [context (:context request)]
       (let [uri (:uri request)]
@@ -196,6 +224,16 @@ Think of making a wheel out of the fns and rolling it up coll."
 
 (wrap! api-routes remove-context jsonp-ify)
 
-(defn init-world []
+(defn init-graph []
   (dosync
    (ref-set the-graph (load-graph))))
+
+(defn periodically-refresh-graph [interval]
+  "Refresh the graph every interval milliseconds."
+  (Thread/sleep interval)
+  (init-graph)
+  (recur interval))
+
+(defn init-world []
+  (init-graph)
+  (.start (Thread. #(periodically-refresh-graph 3600000))))

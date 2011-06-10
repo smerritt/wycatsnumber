@@ -79,3 +79,46 @@ If node1 or node2 don't exist in the graph, they will be added."
                         (conj seen current-node)
                         (+ 1 examined))))))))))
 
+
+(defn bfs-from-1 [graph queue min-weight predecessor depth]
+  (lazy-seq
+   (if (empty? queue)
+     (list)
+     (let [this-node (first queue)
+           this-depth (if-let [pred-depth (depth (predecessor this-node))]
+                        (+ 1 pred-depth)
+                        0)
+           new-neighbors (map first
+                              (filter (fn [[neighbor, edge-weight]]
+                                        (and (>= edge-weight min-weight)
+                                             (not (depth neighbor))
+                                             (not (= neighbor this-node))))
+                                      (neighbors graph this-node)))]
+       (cons {:node this-node
+              :predecessor (predecessor this-node)
+              :depth this-depth}
+             (bfs-from-1 graph
+                         (if (empty? new-neighbors)
+                           (pop queue)
+                           (apply conj (pop queue) new-neighbors))
+                         min-weight
+                         (reduce (fn [acc neigh]
+                                   (assoc acc neigh this-node))
+                                 predecessor
+                                 new-neighbors)
+                         (assoc depth this-node this-depth)))))))
+
+(defn bfs-from
+  "Returns a lazy seq of nodes encountered on a breadth-first search of the graph
+  starting from origin. Sequence elements are maps of the form
+  {:node node, :predecessor predecessor (or nil for origin), :depth depth}.
+
+  Optional min-weight argument (default 0) is the weight that an edge must
+  have in order to count; this allows filtering of weak connections."
+  ([graph origin] (bfs-from graph origin 0))
+  ([graph origin min-weight]
+     (bfs-from-1 graph
+                 (conj clojure.lang.PersistentQueue/EMPTY origin)
+                 min-weight
+                 {}
+                 {})))
