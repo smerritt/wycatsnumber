@@ -184,11 +184,11 @@ Think of making a wheel out of the fns and rolling it up coll."
          (json-response 404 {:unknown-authors [author-name]})))))
 
 (defn jsonp-ify [handler]
-  "If the response is JSON and the request contains the 'jsonp' parameter
-  wraps the response body, e.g. \"$jsonp($response)\")"
+  "If the response is JSON and the request contains the 'callback' parameter
+  wraps the response body, e.g. \"$callback($response)\")"
   (fn [request]
     (if-let [jsonp (get-in request
-                           [:query-params "jsonp"])]
+                           [:query-params "callback"])]
       (let [response (handler request)]
         (if (= "application/json"
                (get-in response [:headers "Content-Type"]))
