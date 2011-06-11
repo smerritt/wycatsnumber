@@ -6,7 +6,8 @@
             [org.danlarkin [json :as json]]
             [org.andcheese.wycatsnumber
              [graph :as graph]
-             [db :as db]]))
+             [db :as db]]
+            [ring.middleware [params :as params-middleware]]))
 
 ;; project IDs and author IDs can collide, but they're all natural
 ;; numbers, so we can use the whole number line to make room
@@ -182,24 +183,6 @@ Think of making a wheel out of the fns and rolling it up coll."
               (json-response))
          (json-response 404 {:unknown-authors [author-name]})))))
 
-(defroutes api-routes
-  (GET "/" []
-       "Hello World")
-  (GET "/path/:author1/:author2" [author1 author2]
-       (handle-path-request author1 author2))
-  (GET "/path/:author1/:author2/:weight" [author1 author2 weight]
-       (handle-path-request author1 author2 (Integer/parseInt weight)))
-  (GET "/friends/:author" [author]
-       (handle-friend-request author 1))
-  (GET "/friends/:author/:weight" [author weight]
-       (handle-friend-request author 1 (Integer/parseInt weight)))
-  (GET "/foaf/:author" [author]
-       (handle-friend-request author 2))
-  (GET "/foaf/:author/:weight" [author weight]
-       (handle-friend-request author 2 (Integer/parseInt weight)))
-  (ANY "*" [request] (fn [request] {:status 404
-                                    :body (str request)})))
-
 (defn jsonp-ify [handler]
   "If the response is JSON and the request contains the 'jsonp' parameter
   wraps the response body, e.g. \"$jsonp($response)\")"
@@ -209,9 +192,10 @@ Think of making a wheel out of the fns and rolling it up coll."
       (let [response (handler request)]
         (if (= "application/json"
                (get-in response [:headers "Content-Type"]))
-          (assoc response
-            :body (str jsonp "(" (response :body) ")"))
-          (handler request)))
+          (-> response
+              (assoc :body (str jsonp "(" (response :body) ");"))
+              (update-in [:headers "Content-Type"] (constantly "application/javascript")))
+          response))
       (handler request))))
 
 (defn remove-context [handler]
@@ -234,7 +218,29 @@ Think of making a wheel out of the fns and rolling it up coll."
           (handler request)))
       (handler request))))
 
-(wrap! api-routes remove-context jsonp-ify)
+
+
+(def api-routes
+     (-> (routes
+          (GET "/" []
+               "Hello World")
+          (GET "/path/:author1/:author2" [author1 author2]
+               (handle-path-request author1 author2))
+          (GET "/path/:author1/:author2/:weight" [author1 author2 weight]
+               (handle-path-request author1 author2 (Integer/parseInt weight)))
+          (GET "/friends/:author" [author]
+               (handle-friend-request author 1))
+          (GET "/friends/:author/:weight" [author weight]
+               (handle-friend-request author 1 (Integer/parseInt weight)))
+          (GET "/foaf/:author" [author]
+               (handle-friend-request author 2))
+          (GET "/foaf/:author/:weight" [author weight]
+               (handle-friend-request author 2 (Integer/parseInt weight)))
+          (ANY "*" [request] (fn [request] {:status 404
+                                            :body (str request)})))
+         jsonp-ify
+         remove-context
+         params-middleware/wrap-params))
 
 (defn init-graph []
   (load-graph-into the-graph))
