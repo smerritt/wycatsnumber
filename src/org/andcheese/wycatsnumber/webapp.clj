@@ -177,6 +177,7 @@ Think of making a wheel out of the fns and rolling it up coll."
               (filter #(= (* 2 distance)
                           (% :depth)))
               (map #(author-id-from-node (% :node)))
+              (take 512)   ;; XXX hardcoded limit to avoid SQL wtf
               (author-attributes)
               (json-response))
          (json-response 404 {:unknown-authors [author-name]})))))
