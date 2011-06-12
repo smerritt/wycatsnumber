@@ -189,11 +189,9 @@ Think of making a wheel out of the fns and rolling it up coll."
           (GET "/foaf/:author/:weight" [author weight]
                (handle-friend-request author 2 (Integer/parseInt weight)))
           (ANY "*" [request] (fn [request] (json-response 404 request))))
-         print-request
          jsonp-ify
          remove-context
-         params-middleware/wrap-params
-         print-response))
+         params-middleware/wrap-params))
 
 (defn init-graph []
   (load-graph-into the-graph))
