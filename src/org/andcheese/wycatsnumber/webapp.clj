@@ -104,7 +104,6 @@ Think of making a wheel out of the fns and rolling it up coll."
              api-responsify
              json-response)))))
 
-
 (defn handle-friend-request
   ([author distance]
      (handle-friend-request author distance 0))
@@ -122,6 +121,14 @@ Think of making a wheel out of the fns and rolling it up coll."
                     :gravatar_id     (x :tag)}))
             (json-response))
        (json-response 404 {:unknown-authors [author]}))))
+
+(defn handle-status-request []
+  (json-response (graph/info @the-graph)))
+
+(defn print-request [handler]
+  (fn [request]
+    (println request)
+    (handler request)))
 
 (defn print-response [handler]
   (fn [request]
@@ -164,12 +171,11 @@ Think of making a wheel out of the fns and rolling it up coll."
           (handler request)))
       (handler request))))
 
-
-
 (def api-routes
      (-> (routes
           (GET "/" []
                "Hello World")
+          (GET "/status" [] (handle-status-request))
           (GET "/path/:author1/:author2" [author1 author2]
                (handle-path-request author1 author2))
           (GET "/path/:author1/:author2/:weight" [author1 author2 weight]
@@ -182,11 +188,12 @@ Think of making a wheel out of the fns and rolling it up coll."
                (handle-friend-request author 2))
           (GET "/foaf/:author/:weight" [author weight]
                (handle-friend-request author 2 (Integer/parseInt weight)))
-          (ANY "*" [request] (fn [request] {:status 404
-                                            :body (str request)})))
+          (ANY "*" [request] (fn [request] (json-response 404 request))))
+         print-request
          jsonp-ify
          remove-context
-         params-middleware/wrap-params))
+         params-middleware/wrap-params
+         print-response))
 
 (defn init-graph []
   (load-graph-into the-graph))

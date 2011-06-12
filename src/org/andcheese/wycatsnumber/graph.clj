@@ -7,6 +7,15 @@
    :edges {}
    :node-tags {}})
 
+(defn info [graph]
+  "Some basic statistics about the graph."
+  {
+   :nodes (count (graph :nodes))
+   :edges (reduce +
+                  0
+                  (map #(count (second %)) (graph :edges)))
+   :tagged-nodes (count (graph :node-tags))})
+
 (defn conj-edge [graph node1 node2 weight]
   "Internal utility function.
 
