@@ -1,0 +1,19 @@
+.result {
+    float: left;
+    width: 120px;
+    border: 1px solid;
+
+    padding: 5px;
+    margin: 10px 10px 5px 0px;
+
+}
+
+.result a.username {
+    display: block;
+    text-align: center;
+}
+
+.result .gravatar {
+    padding: 5px 0 0 0;
+    text-align: center;
+}
