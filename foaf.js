@@ -9,11 +9,13 @@ function fetchFoafData(authorName) {
 }
 
 function gravatar(github_user) {
-  return $("<img>").
-    attr("src", 
-         'http://www.gravatar.com/avatar/' + github_user.gravatar_id).
-    attr("alt", github_user.name).
-    attr("title", github_user.name);
+  return $("<a></a>").
+    attr("href", "?username=" + github_user.name).
+    append($("<img>").
+           attr("src", 
+                'http://www.gravatar.com/avatar/' + github_user.gravatar_id).
+           attr("alt", github_user.name).
+           attr("title", github_user.name));;
 }
 
 function displayFoaf(github_user) {
@@ -26,7 +28,7 @@ function displayFoaf(github_user) {
            addClass("username").
            append($("<a></a>").
                   addClass("username").
-                  attr("href", "?username=" + github_user.name).
+                  attr("href", "https://github.com/" + github_user.name).
                   text(github_user.name).
                   click(function(e) {
                     fetchFoafData(github_user.name);
@@ -37,8 +39,8 @@ function displayFoaf(github_user) {
 
 function foafCallback(data) {
   $("#results").empty();
-  $.each(data, function(k, v) {
-    displayFoaf(v);
+  $.each(data, function(i, x) {
+    displayFoaf(x);
   });
 }
 
