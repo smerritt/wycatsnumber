@@ -9,13 +9,6 @@
              [db :as db]]
             [ring.middleware [params :as params-middleware]]))
 
-;; project IDs and author IDs can collide, but they're all natural
-;; numbers, so we can use the whole number line to make room
-(def node-from-project-id -)
-(def project-id-from-node -)
-(def node-from-author-id identity)
-(def author-id-from-node identity)
-
 (defmacro with-db [& body]
   `(sql/with-connection db/connection
      ~@body))
@@ -26,8 +19,15 @@
    usage lower."
   (with-db
     (sql/with-query-results collaborations
-      ["select * from collaborations order by id desc"]
-      (loop [collab-sets (partition 1000 collaborations)]
+      ["SELECT authors.github_username AS author,
+               authors.gravatar_id     AS gravatar_id,
+               collaborations.commits  AS commits,
+               projects.name           AS project
+        FROM authors
+          JOIN collaborations ON authors.id = collaborations.author_id
+          JOIN projects ON projects.id = collaborations.project_id
+        ORDER BY author DESC"]
+      (loop [collab-sets (partition-all 1000 collaborations)]
         (if (empty? collab-sets)
           nil
           (let [collab-set (first collab-sets)]
@@ -35,63 +35,14 @@
              (loop [cs collab-set]
                (if (empty? cs)
                  nil
-                 (let [c (first cs)]
-                   (alter ref graph/add-edge
-                          (node-from-author-id (c :author_id))
-                          (node-from-project-id (c :project_id))
-                          (c :commits))
+                 (let [{:keys [author project commits gravatar_id]} (first cs)]
+                   (alter ref
+                          #(-> %1
+                               (graph/add-edge author project commits)
+                               (graph/tag-node author gravatar_id)))
                    (recur (rest cs))))))
             (recur (rest collab-sets))))))))
 
-(defn author-name-to-id [author-name]
-  (sql/with-query-results result
-    ["select id from authors where github_username = ?" author-name]
-    (if (seq result)
-      ((first result) :id)
-      nil)))
-
-(defn author-id-to-name [author-id]
-  (sql/with-query-results result
-    ["select github_username from authors where id = ?" author-id]
-    ((first result) :github_username)))
-
-(defn sql-placeholders [n]
-  "Returns N comma-separated questionmarks between parens, e.g. (?,?,?)"
-  (str
-   "("
-   (apply str
-          (interpose ","
-                     (repeatedly n (fn [] "?"))))
-   ")"))
-
-(defn author-attributes [author-ids]
-  (if (seq author-ids)
-    (let [placeholders (sql-placeholders (count author-ids))]
-      (sql/with-query-results result
-        (into [(str "select id, github_username as name, gravatar_id from authors where id in" placeholders)]
-               author-ids)
-        (reduce (fn [all-attrs these-attrs]
-                  (assoc all-attrs
-                    (these-attrs :id)
-                    {:name (these-attrs :name)
-                     :gravatar_id (these-attrs :gravatar_id)}))
-                {}
-                result)))
-    {}))
-
-(defn project-attributes [project-ids]
-  (if (seq project-ids)
-    (let [placeholders (sql-placeholders (count project-ids))]
-      (sql/with-query-results result
-        (into [(str "select id, name from projects where id in " placeholders)]
-              project-ids)
-        (reduce (fn [all-attrs these-attrs]
-                  (assoc all-attrs
-                    (these-attrs :id)
-                    {:name (these-attrs :name)}))
-                {}
-                result)))
-    {}))
 
 (defn every-nth [n coll]
   (map first
@@ -114,17 +65,17 @@ Think of making a wheel out of the fns and rolling it up coll."
                            (rest coll)))
       '())))
 
-(defn nodes-to-db-ids [nodes]
-  (wheel-map [author-id-from-node project-id-from-node] nodes))
+(defn to-api-author [path-component]
+  {:type "author"
+   :name (path-component :node)
+   :gravatar_id (path-component :tag)})
 
-(defn api-responsify [ids]
-  ;; ids is a seq of (author-id, project-id, author-id, project-id,
-  ;; ...)
-  (let [author-ids (every-nth 2 ids)
-        project-ids (every-nth 2 (drop 1 ids))
-        author-info (author-attributes author-ids)
-        project-info (project-attributes project-ids)]
-    (wheel-map [author-info project-info] ids)))
+(defn to-api-project [path-component]
+  {:type "project"
+   :name (path-component :node)})
+
+(defn api-responsify [path]
+  (wheel-map [to-api-author to-api-project] path))
 
 (def the-graph (ref (graph/vacant)))
 
@@ -132,8 +83,7 @@ Think of making a wheel out of the fns and rolling it up coll."
   ([author-id1 author-id2]
      (path-between-authors author-id1 author-id2 1))
   ([author-id1 author-id2 min-weight]
-     (nodes-to-db-ids
-      (graph/path @the-graph author-id1 author-id2 min-weight))))
+     (graph/path @the-graph author-id1 author-id2 min-weight)))
 
 (defn json-response
   ([body] {:headers {"Content-Type" "application/json"}
@@ -143,45 +93,41 @@ Think of making a wheel out of the fns and rolling it up coll."
        :status 404)))
 
 (defn handle-path-request
-  ([author-name1 author-name2]
-     (handle-path-request author-name1 author-name2 1))
-  ([author-name1 author-name2 min-weight]
-     (with-db
-       (let [author-id1 (author-name-to-id author-name1)
-             author-id2 (author-name-to-id author-name2)]
-         (if (or (nil? author-id1)
-                 (nil? author-id2))
-           (let [unknown-authors (map first
-                                      (filter #(nil? (second %1))
-                                              [[author-name1 author-id1]
-                                               [author-name2 author-id2]]))]
+  ([author1 author2]
+     (handle-path-request author1 author2 1))
+  ([author1 author2 min-weight]
+     (let [unknown-authors (filter #(not (graph/has-node? @the-graph %))
+                                   [author1 author2])]
+       (if (seq unknown-authors)
+         (json-response 404 {:unknown-authors unknown-authors})
+         (-> (path-between-authors author1 author2 min-weight)
+             api-responsify
+             json-response)))))
 
-             (json-response 404
-                            {:unknown-authors unknown-authors}))
-           (json-response
-            (api-responsify
-             (path-between-authors author-id1
-                                   author-id2
-                                   min-weight))))))))
 
 (defn handle-friend-request
-  ([author-name distance]
-     (handle-friend-request author-name distance 0))
-  ([author-name distance min-weight]
-     (with-db
-       (if-let [author-id (author-name-to-id author-name)]
-         (->> (graph/bfs-from @the-graph
-                              (node-from-author-id author-id)
-                              min-weight)
-              (take-while #(<= (% :depth)
-                               (* 2 distance)))
-              (filter #(= (* 2 distance)
-                          (% :depth)))
-              (map #(author-id-from-node (% :node)))
-              (take 512)   ;; XXX hardcoded limit to avoid SQL wtf
-              (author-attributes)
-              (json-response))
-         (json-response 404 {:unknown-authors [author-name]})))))
+  ([author distance]
+     (handle-friend-request author distance 0))
+  ([author distance min-weight]
+     (if (graph/has-node? @the-graph author)
+       (->> (graph/bfs-from @the-graph
+                            author
+                            min-weight)
+            (take-while #(<= (% :depth)
+                             (* 2 distance)))
+            (filter #(= (* 2 distance)
+                        (% :depth)))
+            (map (fn [x]
+                   {:github_username (x :node)
+                    :gravatar_id     (x :tag)}))
+            (json-response))
+       (json-response 404 {:unknown-authors [author]}))))
+
+(defn print-response [handler]
+  (fn [request]
+    (let [response (handler request)]
+      (println response)
+      response)))
 
 (defn jsonp-ify [handler]
   "If the response is JSON and the request contains the 'callback' parameter

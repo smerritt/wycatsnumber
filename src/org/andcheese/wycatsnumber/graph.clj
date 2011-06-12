@@ -4,7 +4,8 @@
 (defn vacant []
   "Graph with no nodes and no edges. Just a skeleton."
   {:nodes (hash-set)
-   :edges {}})
+   :edges {}
+   :node-tags {}})
 
 (defn conj-edge [graph node1 node2 weight]
   "Internal utility function.
@@ -25,6 +26,17 @@ Add node to graph."
              #(conj %1 %2)
              node))
 
+(defn tag-node [graph node tag]
+  "Set tag as the data for node. It'll turn up in results from path and bfs-path."
+  (update-in graph
+             [:node-tags]
+             #(assoc %1 %2 %3)
+             node tag))
+
+(defn tag-for [graph node]
+  "Returns the tag data set by tag-node."
+  (get-in graph [:node-tags node]))
+
 (defn add-edge [graph node1 node2 weight]
   "Add an edge (node1 -> node2) and (node2 -> node1) with the given weight.
 
@@ -35,28 +47,34 @@ If node1 or node2 don't exist in the graph, they will be added."
       (conj-edge node1 node2 weight)
       (conj-edge node2 node1 weight)))
 
+(defn has-node? [graph node]
+  (boolean ((graph :nodes) node)))
+
 (defn neighbors [graph node]
   "Returns neighbors of node + their edge-weights as a seq of [neighbor, weight] pairs."
-  ((graph :edges)
-   node
-   {}))
+  (get-in graph [:edges node] {}))
+
+(defn make-path-node [graph node]
+  "Internal utility function. Used to make returned-node values from path."
+  {:node node,
+   :tag (tag-for graph node)})
 
 (defn path
+  "Returns path from src to dest. Returned nodes are of the form
+   {:node node, :tag tag-for-node}. :tag will be nil if no tag was set."
   ([graph src dest]
      (path graph src dest 1))
   ([graph src dest min-weight]
      (loop [queue (queue/add (queue/vacant) [src])
             predecessor {}
-            seen (hash-set)
-            examined 0]
+            seen (hash-set)]
        (if (empty? queue)
          nil
          (let [[current-node rest-of-queue] (queue/dequeue queue)]
            (if (seen current-node)
              (recur rest-of-queue
                     predecessor
-                    seen
-                    examined)
+                    seen)
              (let [new-neighbors (map first
                                       (filter (fn [[neighbor, edge-weight]]
                                                 (and (not (= neighbor src))
@@ -64,11 +82,11 @@ If node1 or node2 don't exist in the graph, they will be added."
                                                      (not (predecessor neighbor))))
                                               (neighbors graph current-node)))]
                (if (= current-node dest)
-                 (loop [path [current-node]
+                 (loop [path [(make-path-node graph current-node)]
                         next-node (predecessor current-node)]
                    (if (not next-node)
                      path
-                     (recur (conj path next-node)
+                     (recur (conj path (make-path-node graph next-node))
                             (predecessor next-node))))
                  (recur (queue/add rest-of-queue
                                    new-neighbors)
@@ -76,8 +94,7 @@ If node1 or node2 don't exist in the graph, they will be added."
                                   (assoc acc n current-node))
                                 predecessor
                                 new-neighbors)
-                        (conj seen current-node)
-                        (+ 1 examined))))))))))
+                        (conj seen current-node))))))))))
 
 
 (defn bfs-from-1 [graph queue min-weight predecessor depth]
@@ -95,6 +112,7 @@ If node1 or node2 don't exist in the graph, they will be added."
                                              (not (= neighbor this-node))))
                                       (neighbors graph this-node)))]
        (cons {:node this-node
+              :tag (tag-for graph this-node)
               :predecessor (predecessor this-node)
               :depth this-depth}
              (bfs-from-1 graph
