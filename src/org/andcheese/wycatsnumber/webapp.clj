@@ -117,8 +117,8 @@ Think of making a wheel out of the fns and rolling it up coll."
             (filter #(= (* 2 distance)
                         (% :depth)))
             (map (fn [x]
-                   {:github_username (x :node)
-                    :gravatar_id     (x :tag)}))
+                   {:name        (x :node)
+                    :gravatar_id (x :tag)}))
             (json-response))
        (json-response 404 {:unknown-authors [author]}))))
 
