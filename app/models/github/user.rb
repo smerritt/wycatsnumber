@@ -4,6 +4,7 @@ module Github
 
     def owned_repos
       response = fetch_and_retry(owned_repos_path)
+      return [] unless response  # 404
       @owned_repos ||= JSON.parse(response.body)["repositories"].map do |repo_data|
         Github::Repo.from_api_repo(repo_data)
       end
@@ -17,6 +18,7 @@ module Github
 
     def watched_repos
       response = fetch_and_retry(watched_repos_path)
+      return [] unless response  # 404
       @watched_repos ||= JSON.parse(response.body)["repositories"].map do |repo_data|
         Github::Repo.from_api_repo(repo_data)
       end
