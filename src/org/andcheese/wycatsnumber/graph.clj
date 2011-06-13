@@ -161,3 +161,35 @@ If node1 or node2 don't exist in the graph, they will be added."
                  min-weight
                  {}
                  {})))
+
+(defn all-paths-1 [graph src dest min-weight max-depth exclude]
+  (if (<= max-depth 1)
+    (if (seq (->> (neighbors graph src min-weight)
+                  (filter #(= dest %))))
+      (list (list (make-path-node graph src)
+                  (make-path-node graph dest)))
+      (list))
+    (->> (neighbors graph src min-weight)
+         (filter (complement exclude))
+         (map #(all-paths-1 graph
+                            %1
+                            dest
+                            min-weight
+                            (dec max-depth)
+                            (conj exclude %1)))
+         (apply concat)
+         (map #(conj % (make-path-node graph src))))))
+
+(defn all-paths
+  "Returns all distinct paths between src and dest. Returned nodes are of the form
+   {:node node, :tag tag-for-node}. :tag will be nil if no tag was set.
+   Optional parameter min-weight reflects which edges are considered valid."
+  ([graph src dest]
+     (all-paths graph src dest 0))
+  ([graph src dest min-weight]
+     (all-paths-1 graph
+                  src
+                  dest
+                  min-weight
+                  (dec (count (path graph src dest min-weight)))
+                  (hash-set src))))

@@ -88,35 +88,51 @@ Think of making a wheel out of the fns and rolling it up coll."
      (assoc (json-response body)
        :status 404)))
 
+(defn require-known-authors [authors func]
+  (let [unknown-authors (filter #(not (graph/has-node? @the-graph %))
+                                authors)]
+    (if (seq unknown-authors)
+         (json-response 404 {:unknown-authors unknown-authors})
+         (func))))
+
 (defn handle-path-request
   ([author1 author2]
      (handle-path-request author1 author2 1))
   ([author1 author2 min-weight]
-     (let [unknown-authors (filter #(not (graph/has-node? @the-graph %))
-                                   [author1 author2])]
-       (if (seq unknown-authors)
-         (json-response 404 {:unknown-authors unknown-authors})
-         (-> (path-between-authors author1 author2 min-weight)
-             api-responsify
-             json-response)))))
+     (require-known-authors
+      [author1 author2]
+      #(-> (graph/path @the-graph author1 author2 min-weight)
+          api-responsify
+          json-response))))
 
 (defn handle-friend-request
   ([author distance]
      (handle-friend-request author distance 0))
   ([author distance min-weight]
-     (if (graph/has-node? @the-graph author)
-       (->> (graph/bfs-from @the-graph
-                            author
-                            min-weight)
-            (take-while #(<= (% :depth)
-                             (* 2 distance)))
-            (filter #(= (* 2 distance)
-                        (% :depth)))
-            (map (fn [x]
-                   {:name        (x :node)
-                    :gravatar_id (x :tag)}))
-            (json-response))
-       (json-response 404 {:unknown-authors [author]}))))
+     (require-known-authors
+      [author]
+      (fn []
+        (->> (graph/bfs-from @the-graph
+                             author
+                             min-weight)
+             (take-while #(<= (% :depth)
+                              (* 2 distance)))
+             (filter #(= (* 2 distance)
+                         (% :depth)))
+             (map (fn [x]
+                    {:name        (x :node)
+                     :gravatar_id (x :tag)}))
+             (json-response))))))
+
+(defn handle-all-paths-request
+  ([src dest]
+     (handle-all-paths-request src dest 0))
+  ([src dest min-weight]
+     (require-known-authors
+      [src dest]
+      #(->> (graph/all-paths @the-graph src dest min-weight)
+           (map api-responsify)
+           json-response))))
 
 (defn handle-status-request []
   (json-response (graph/info @the-graph)))
@@ -184,6 +200,10 @@ Think of making a wheel out of the fns and rolling it up coll."
                (handle-friend-request author 2))
           (GET "/foaf/:author/:weight" [author weight]
                (handle-friend-request author 2 (Integer/parseInt weight)))
+          (GET "/all-paths/:author1/:author2" [author1 author2]
+               (handle-all-paths-request author1 author2))
+          (GET "/all-paths/:author1/:author2/:weight" [author1 author2 weight]
+               (handle-all-paths-request author1 author2 (Integer/parseInt weight)))
           (ANY "*" [request] (fn [request] (json-response 404 request))))
          jsonp-ify
          remove-context
