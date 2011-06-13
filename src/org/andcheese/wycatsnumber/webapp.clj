@@ -43,27 +43,23 @@
                    (recur (rest cs))))))
             (recur (rest collab-sets))))))))
 
-
-(defn every-nth [n coll]
-  (map first
-       (partition 1 n coll)))
-
-(defn left-rotate [v]
-  "Rotates a vector to the left, e.g. [1 2 3] --> [2 3 1]"
-  (conj (subvec v 1)
-        (v 0)))
+;; This will probably get baked in in some future Clojure version, I'd imagine.
+(defn queue? [x]
+  (= clojure.lang.PersistentQueue (class x)))
 
 (defn wheel-map [fns coll]
   "Returns a lazy seq that is the result of applying the first fn in fns to the first element of coll, the second fn to the second element, ..., the nth fn to the nth element, the first fn to the (n+1)th element, and so on.
 
 Think of making a wheel out of the fns and rolling it up coll."
-  (if (not (vector? fns))
-    (wheel-map (vector fns) coll)
-    (if (seq coll)
-      (lazy-cat (list ((first fns) (first coll)))
-                (wheel-map (left-rotate fns)
-                           (rest coll)))
-      '())))
+  (if (not (queue? fns))
+    (wheel-map (into clojure.lang.PersistentQueue/EMPTY fns) coll)
+    (lazy-seq
+     (if (empty? coll)
+       (list)
+       (cons ((first fns) (first coll))
+             (wheel-map (conj (pop fns)
+                              (first fns))
+                        (rest coll)))))))
 
 (defn to-api-author [path-component]
   {:type "author"
