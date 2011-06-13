@@ -89,6 +89,7 @@ function maybeLoadFromQueryString() {
 
 $(document).ready(function() {
   $("#foaf_form").submit(function(event) {
+    fetchFriendData($("#username").val());
     fetchFoafData($("#username").val());
     return false;
   });
