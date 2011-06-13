@@ -1,4 +1,4 @@
-var apiBase = "http://localhost:4000";
+var apiBase = "/api";
 
 function fetchFriendData(authorName) {
   $.ajax({
