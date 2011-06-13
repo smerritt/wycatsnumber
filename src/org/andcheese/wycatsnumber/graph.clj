@@ -58,9 +58,18 @@ If node1 or node2 don't exist in the graph, they will be added."
 (defn has-node? [graph node]
   (boolean ((graph :nodes) node)))
 
-(defn neighbors [graph node]
-  "Returns neighbors of node + their edge-weights as a seq of [neighbor, weight] pairs."
-  (get-in graph [:edges node] {}))
+(defn degree
+  ([graph node]
+     (degree graph node 0))
+  ([graph node min-weight]
+     (count (neighbors graph node min-weight))))
+
+(defn neighbors [graph node min-weight]
+  "Returns neighbors of node + their edge-weights as a seq.
+   Nodes weighing less than min-weight are ignored."
+  (->> (get-in graph [:edges node] {})
+       (filter (fn [[_, weight]] (<= min-weight weight)))
+       (map first)))
 
 (defn make-path-node [graph node]
   "Internal utility function. Used to make returned-node values from path."
@@ -73,7 +82,7 @@ If node1 or node2 don't exist in the graph, they will be added."
   "Returns path from src to dest. Returned nodes are of the form
    {:node node, :tag tag-for-node}. :tag will be nil if no tag was set."
   ([graph src dest]
-     (path graph src dest 1))
+     (path graph src dest 0))
   ([graph src dest min-weight]
      (loop [queue (conj (clojure.lang.PersistentQueue/EMPTY) src)
             predecessor {}
@@ -85,12 +94,12 @@ If node1 or node2 don't exist in the graph, they will be added."
              (recur (pop queue)
                     predecessor
                     seen)
-             (let [new-neighbors (map first
-                                      (filter (fn [[neighbor, edge-weight]]
-                                                (and (not (= neighbor src))
-                                                     (>= edge-weight min-weight)
-                                                     (not (predecessor neighbor))))
-                                              (neighbors graph current-node)))]
+             (let [new-neighbors (filter (fn [neighbor]
+                                           (and (not (= neighbor src))
+                                                (not (predecessor neighbor))))
+                                         (neighbors graph
+                                                    current-node
+                                                    min-weight))]
                (if (= current-node dest)
                  (loop [path [(make-path-node graph current-node)]
                         next-node (predecessor current-node)]
@@ -120,12 +129,10 @@ If node1 or node2 don't exist in the graph, they will be added."
              this-depth (if-let [pred-depth (depth (predecessor this-node))]
                           (+ 1 pred-depth)
                           0)
-             new-neighbors (map first
-                                (filter (fn [[neighbor, edge-weight]]
-                                          (and (>= edge-weight min-weight)
-                                               (not (depth neighbor))
-                                               (not (= neighbor this-node))))
-                                        (neighbors graph this-node)))]
+             new-neighbors (filter (fn [neighbor]
+                                     (and (not (depth neighbor))
+                                          (not (= neighbor this-node))))
+                                   (neighbors graph this-node min-weight))]
          (cons {:node this-node
                 :tag (tag-for graph this-node)
                 :predecessor (predecessor this-node)
