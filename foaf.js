@@ -52,7 +52,7 @@ function foafCallback(data, username) {
            text("Friends of friends of " + username));
 
   $.each(data, function(i, x) {
-    if (i < 100)
+    if (i < 1000)
       displayUser(x, '#foafs');
   });
 }
