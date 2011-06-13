@@ -1,10 +1,18 @@
 var apiBase = "http://localhost:4000";
 
+function fetchFriendData(authorName) {
+  $.ajax({
+    url: apiBase + "/friends/" + authorName,
+    dataType: "jsonp",
+    success: function(data) { friendCallback(data, authorName) }
+  });
+}
+
 function fetchFoafData(authorName) {
   $.ajax({
-    url: apiBase + "/friends/" + authorName + "/5",
+    url: apiBase + "/foaf/" + authorName,
     dataType: "jsonp",
-    success: foafCallback,
+    success: function(data) { foafCallback(data, authorName) }
   });
 }
 
@@ -18,7 +26,7 @@ function gravatar(github_user) {
            attr("title", github_user.name));;
 }
 
-function displayFoaf(github_user) {
+function displayUser(github_user, where) {
   var newEntry = $("<div></div>").
     addClass("result").
     append($("<div></div>").
@@ -34,13 +42,29 @@ function displayFoaf(github_user) {
                     fetchFoafData(github_user.name);
                   })));
 
-  $("#results").append(newEntry);
+  $(where).append(newEntry);
 }
 
-function foafCallback(data) {
-  $("#results").empty();
+function foafCallback(data, username) {
+  $("#foafs").
+    empty().
+    append($("<h1></h1>").
+           text("Friends of friends of " + username));
+
   $.each(data, function(i, x) {
-    displayFoaf(x);
+    if (i < 100)
+      displayUser(x, '#foafs');
+  });
+}
+
+function friendCallback(data, username) {
+  $("#friends").
+    empty().
+    append($("<h1></h1>").
+           text("Friends of " + username));
+
+  $.each(data, function(i, x) {
+    displayUser(x, '#friends');
   });
 }
 
@@ -58,6 +82,7 @@ function maybeLoadFromQueryString() {
 
   if (username.length > 0) {
     $("#foaf_form").hide();
+    fetchFriendData(username);
     fetchFoafData(username);
   }
 }
