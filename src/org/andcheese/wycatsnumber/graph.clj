@@ -58,18 +58,19 @@ If node1 or node2 don't exist in the graph, they will be added."
 (defn has-node? [graph node]
   (boolean ((graph :nodes) node)))
 
-(defn degree
-  ([graph node]
-     (degree graph node 0))
-  ([graph node min-weight]
-     (count (neighbors graph node min-weight))))
-
 (defn neighbors [graph node min-weight]
   "Returns neighbors of node + their edge-weights as a seq.
    Nodes weighing less than min-weight are ignored."
   (->> (get-in graph [:edges node] {})
        (filter (fn [[_, weight]] (<= min-weight weight)))
        (map first)))
+
+(defn degree
+  "Degree of a node."
+  ([graph node]
+     (degree graph node 0))
+  ([graph node min-weight]
+     (count (neighbors graph node min-weight))))
 
 (defn make-path-node [graph node]
   "Internal utility function. Used to make returned-node values from path."
