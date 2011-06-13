@@ -34,6 +34,7 @@ module Github
 
     def contributors_data
       response = fetch_and_retry(contributors_path)
+      return [] unless response
       JSON.parse(response.body)["contributors"]
     end
 
