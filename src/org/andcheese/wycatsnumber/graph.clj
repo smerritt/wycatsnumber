@@ -1,5 +1,4 @@
-(ns org.andcheese.wycatsnumber.graph
-  (:require [org.andcheese.wycatsnumber [queue :as queue]]))
+(ns org.andcheese.wycatsnumber.graph)
 
 (defn vacant []
   "Graph with no nodes and no edges. Just a skeleton."
@@ -74,14 +73,14 @@ If node1 or node2 don't exist in the graph, they will be added."
   ([graph src dest]
      (path graph src dest 1))
   ([graph src dest min-weight]
-     (loop [queue (queue/add (queue/vacant) [src])
+     (loop [queue (conj (clojure.lang.PersistentQueue/EMPTY) src)
             predecessor {}
             seen (hash-set)]
        (if (empty? queue)
          nil
-         (let [[current-node rest-of-queue] (queue/dequeue queue)]
+         (let [current-node (first queue)]
            (if (seen current-node)
-             (recur rest-of-queue
+             (recur (pop queue)
                     predecessor
                     seen)
              (let [new-neighbors (map first
@@ -97,8 +96,7 @@ If node1 or node2 don't exist in the graph, they will be added."
                      path
                      (recur (conj path (make-path-node graph next-node))
                             (predecessor next-node))))
-                 (recur (queue/add rest-of-queue
-                                   new-neighbors)
+                 (recur (into (pop queue) new-neighbors)
                         (reduce (fn [acc n]
                                   (assoc acc n current-node))
                                 predecessor
@@ -131,9 +129,7 @@ If node1 or node2 don't exist in the graph, they will be added."
                 :predecessor (predecessor this-node)
                 :depth this-depth}
                (bfs-from-1 graph
-                           (if (empty? new-neighbors)
-                             (pop queue)
-                             (apply conj (pop queue) new-neighbors))
+                           (into (pop queue) new-neighbors)
                            min-weight
                            (reduce (fn [acc neigh]
                                      (assoc acc neigh this-node))
