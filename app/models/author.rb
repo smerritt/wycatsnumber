@@ -1,7 +1,7 @@
 class Author
   include DataMapper::Resource
 
-  MIN_AGE_FOR_FETCH = 60*60*24*7   # one week old
+  MIN_AGE_FOR_FETCH = 60*60*24*30   # 30 days old
 
   property :id,              Serial
   property :github_username, String,  :required => true, :length => 255, :index => true

@@ -115,7 +115,7 @@ describe 'WalkUser#perform' do
   end
 
   it "updates #fetched_at" do
-    @author.update(:fetched_at => Time.now - 8*DAY)
+    @author.update(:fetched_at => Time.now - 800*DAY)
     now = Time.now
     Time.stub!(:now).and_return(now)
 
