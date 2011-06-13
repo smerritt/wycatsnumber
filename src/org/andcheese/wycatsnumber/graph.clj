@@ -64,8 +64,10 @@ If node1 or node2 don't exist in the graph, they will be added."
 
 (defn make-path-node [graph node]
   "Internal utility function. Used to make returned-node values from path."
-  {:node node,
-   :tag (tag-for graph node)})
+  (let [result {:node node}]
+    (if-let [tag (tag-for graph node)]
+      (assoc result :tag tag)
+      result)))
 
 (defn path
   "Returns path from src to dest. Returned nodes are of the form
