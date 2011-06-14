@@ -165,13 +165,12 @@ If node1 or node2 don't exist in the graph, they will be added."
       (list))
     (->> (neighbors graph src min-weight)
          (filter (complement exclude))
-         (map #(all-paths-1 graph
-                            %1
-                            dest
-                            min-weight
-                            (dec max-depth)
-                            (conj exclude %1)))
-         (apply concat)
+         (mapcat #(all-paths-1 graph
+                               %1
+                               dest
+                               min-weight
+                               (dec max-depth)
+                               (conj exclude %1)))
          (map #(conj % (make-path-node graph src))))))
 
 (defn all-paths
