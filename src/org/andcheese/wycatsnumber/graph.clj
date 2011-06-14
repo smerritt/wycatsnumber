@@ -96,11 +96,11 @@ If node1 or node2 don't exist in the graph, they will be added."
                                                     current-node
                                                     min-weight))]
                (if (= current-node dest)
-                 (loop [path [(make-path-node graph current-node)]
+                 (loop [path [current-node]
                         next-node (predecessor current-node)]
                    (if (not next-node)
-                     path
-                     (recur (conj path (make-path-node graph next-node))
+                     (map #(make-path-node graph %) path)
+                     (recur (conj path next-node)
                             (predecessor next-node))))
                  (recur (into (pop queue) new-neighbors)
                         (reduce (fn [acc n]
