@@ -12,7 +12,8 @@
    :nodes (count (graph :nodes))
    :edges (reduce +
                   0
-                  (map #(count (second %)) (graph :edges)))
+                  (map #(count (second %))
+                       (graph :edges)))
    :tagged-nodes (count (graph :node-tags))})
 
 (defn conj-edge [graph node1 node2 weight]
