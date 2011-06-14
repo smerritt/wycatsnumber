@@ -75,12 +75,6 @@ Think of making a wheel out of the fns and rolling it up coll."
 
 (def the-graph (ref (graph/vacant)))
 
-(defn path-between-authors
-  ([author-id1 author-id2]
-     (path-between-authors author-id1 author-id2 1))
-  ([author-id1 author-id2 min-weight]
-     (graph/path @the-graph author-id1 author-id2 min-weight)))
-
 (defn json-response
   ([body] {:headers {"Content-Type" "application/json"}
            :body (json/encode body)})
