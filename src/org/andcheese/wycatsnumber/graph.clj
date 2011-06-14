@@ -110,8 +110,7 @@ If node1 or node2 don't exist in the graph, they will be added."
                  (map #(make-path-node graph %)
                       (path-via current-node predecessor))
                  (recur (into (pop queue) new-neighbors)
-                        (reduce (fn [acc n]
-                                  (assoc acc n current-node))
+                        (reduce #(assoc %1 %2 current-node)
                                 predecessor
                                 new-neighbors)
                         (conj seen current-node))))))))))
