@@ -33,10 +33,7 @@ Add node to graph."
 
 (defn tag-node [graph node tag]
   "Set tag as the data for node. It'll turn up in results from path and bfs-path."
-  (update-in graph
-             [:node-tags]
-             #(assoc %1 %2 %3)
-             node tag))
+  (assoc-in graph [:node-tags node] tag))
 
 (defn tag-for [graph node]
   "Returns the tag data set by tag-node."
