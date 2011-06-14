@@ -20,11 +20,7 @@
   "Internal utility function.
 
 Add an edge from node1 to node2 with the given weight."
-  (update-in graph
-             [:edges node1]
-             assoc
-             node2
-             weight))
+  (assoc-in graph [:edges node1 node2] weight))
 
 (defn conj-node [graph node]
   "Internal utility function.
