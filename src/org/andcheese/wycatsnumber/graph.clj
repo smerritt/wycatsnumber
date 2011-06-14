@@ -73,6 +73,19 @@ If node1 or node2 don't exist in the graph, they will be added."
       (assoc result :tag tag)
       result)))
 
+(defn path-via [node nexthop]
+  "Internal utility function.
+
+   Given a node N and a map of {thisnode -> nextnode}, returns the path
+   from N until its eventual destination.
+
+   Cycles in nexthop will cause infinite runtime; don't do that."
+  (loop [path [node]]
+    (let [this-node (peek path)]
+      (if-let [next-node (nexthop this-node)]
+        (recur (conj path next-node))
+        path))))
+
 (defn path
   "Returns path from src to dest. Returned nodes are of the form
    {:node node, :tag tag-for-node}. :tag will be nil if no tag was set."
@@ -94,12 +107,8 @@ If node1 or node2 don't exist in the graph, they will be added."
                                            (and (not (= neighbor src))
                                                 (not (predecessor neighbor))))))]
                (if (= current-node dest)
-                 (loop [path [current-node]
-                        next-node (predecessor current-node)]
-                   (if (not next-node)
-                     (map #(make-path-node graph %) path)
-                     (recur (conj path next-node)
-                            (predecessor next-node))))
+                 (map #(make-path-node graph %)
+                      (path-via current-node predecessor))
                  (recur (into (pop queue) new-neighbors)
                         (reduce (fn [acc n]
                                   (assoc acc n current-node))
