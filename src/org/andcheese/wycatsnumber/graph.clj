@@ -89,12 +89,10 @@ If node1 or node2 don't exist in the graph, they will be added."
              (recur (pop queue)
                     predecessor
                     seen)
-             (let [new-neighbors (filter (fn [neighbor]
+             (let [new-neighbors (->> (neighbors graph current-node min-weight)
+                                      (filter (fn [neighbor]
                                            (and (not (= neighbor src))
-                                                (not (predecessor neighbor))))
-                                         (neighbors graph
-                                                    current-node
-                                                    min-weight))]
+                                                (not (predecessor neighbor))))))]
                (if (= current-node dest)
                  (loop [path [current-node]
                         next-node (predecessor current-node)]
