@@ -10,39 +10,36 @@
              [db :as db]]
             [ring.middleware [params :as params-middleware]]))
 
-(defmacro with-db [& body]
-  `(sql/with-connection db/connection
-     ~@body))
-
 (defn load-graph-into [ref]
   "Load collaborations into a graph. The idea is to update our one big cached graph
    in-place, instead of building a whole second copy and swapping it out. Keeps memory
    usage lower."
-  (with-db
-    (sql/with-query-results collaborations
-      ["SELECT authors.github_username AS author,
-               authors.gravatar_id     AS gravatar_id,
-               collaborations.commits  AS commits,
-               projects.name           AS project
+  (sql/with-connection
+   db/connection
+   (sql/with-query-results collaborations
+     ["SELECT authors.github_username AS author,
+              authors.gravatar_id     AS gravatar_id,
+              collaborations.commits  AS commits,
+              projects.name           AS project
         FROM authors
           JOIN collaborations ON authors.id = collaborations.author_id
           JOIN projects ON projects.id = collaborations.project_id
         ORDER BY author DESC"]
-      (loop [collab-sets (partition-all 1000 collaborations)]
-        (if (empty? collab-sets)
-          nil
-          (let [collab-set (first collab-sets)]
-            (dosync
-             (loop [cs collab-set]
-               (if (empty? cs)
-                 nil
-                 (let [{:keys [author project commits gravatar_id]} (first cs)]
-                   (alter ref
-                          #(-> %1
-                               (graph/add-edge author project commits)
-                               (graph/tag-node author gravatar_id)))
-                   (recur (rest cs))))))
-            (recur (rest collab-sets))))))))
+     (loop [collab-sets (partition-all 1000 collaborations)]
+       (if (empty? collab-sets)
+         nil
+         (let [collab-set (first collab-sets)]
+           (dosync
+            (loop [cs collab-set]
+              (if (empty? cs)
+                nil
+                (let [{:keys [author project commits gravatar_id]} (first cs)]
+                  (alter ref
+                         #(-> %1
+                              (graph/add-edge author project commits)
+                              (graph/tag-node author gravatar_id)))
+                  (recur (rest cs))))))
+           (recur (rest collab-sets))))))))
 
 ;; This will probably get baked in in some future Clojure version, I'd imagine.
 (defn queue? [x]
