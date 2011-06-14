@@ -5,6 +5,7 @@
             [clojure.contrib [sql :as sql]]
             [org.danlarkin [json :as json]]
             [org.andcheese.wycatsnumber
+             [middleware :as middleware]
              [graph :as graph]
              [db :as db]]
             [ring.middleware [params :as params-middleware]]))
@@ -131,52 +132,6 @@ Think of making a wheel out of the fns and rolling it up coll."
 (defn handle-status-request []
   (json-response (graph/info @the-graph)))
 
-(defn print-request [handler]
-  (fn [request]
-    (println request)
-    (handler request)))
-
-(defn print-response [handler]
-  (fn [request]
-    (let [response (handler request)]
-      (println response)
-      response)))
-
-(defn jsonp-ify [handler]
-  "If the response is JSON and the request contains the 'callback' parameter
-  wraps the response body, e.g. \"$callback($response)\")"
-  (fn [request]
-    (if-let [jsonp (get-in request
-                           [:query-params "callback"])]
-      (let [response (handler request)]
-        (if (= "application/json"
-               (get-in response [:headers "Content-Type"]))
-          (-> response
-              (assoc :body (str jsonp "(" (response :body) ");"))
-              (update-in [:headers "Content-Type"] (constantly "application/javascript")))
-          response))
-      (handler request))))
-
-(defn remove-context [handler]
-  "Strips the servlet-context part out of the request map
-   so that your routes still work when deployed in a
-   servlet container.
-
-  Does nothing to help you generate self-referential links."
-  (fn [request]
-    (if-let [context (:context request)]
-      (let [uri (:uri request)]
-        (if (.startsWith uri context)
-          (let [minus-context (.substring uri
-                                          (.length context))
-                uri-minus-context (if (= "" minus-context)
-                                    "/"
-                                    minus-context)]
-            (handler (assoc request
-                       :uri uri-minus-context)))
-          (handler request)))
-      (handler request))))
-
 (def api-routes
      (-> (routes
           (GET "/" []
@@ -199,8 +154,8 @@ Think of making a wheel out of the fns and rolling it up coll."
           (GET "/all-paths/:author1/:author2/:weight" [author1 author2 weight]
                (handle-all-paths-request author1 author2 (Integer/parseInt weight)))
           (ANY "*" [request] (fn [request] (json-response 404 request))))
-         jsonp-ify
-         remove-context
+         middleware/jsonp-ify
+         middleware/remove-context
          params-middleware/wrap-params))
 
 (defn init-graph []
