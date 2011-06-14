@@ -56,7 +56,7 @@ module Github
           # continuously hammer our one endpoint and ensure we never
           # make progress.
           Github::Fetcher.rotate_endpoints
-          if retry_count == 1
+          if retry_count == 1 && Github::Fetcher.endpoints.size > 1
             Log.debug "Fetching #{url} hit rate limiter; rotating endpoints and trying again immediately"
           else
             t = sleep_time(retry_count)
@@ -73,8 +73,8 @@ module Github
       end
     end
 
-    def self.endpoints=(es)
-      @endpoints = es
+    class << self
+      attr_accessor :endpoints
     end
 
     self.endpoints = ['http://github.com']
