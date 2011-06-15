@@ -80,7 +80,7 @@ If node1 or node2 don't exist in the graph, they will be added."
    from N until its eventual destination.
 
    Cycles in nexthop will cause infinite runtime; don't do that."
-  (loop [path [node]]
+  (loop [path (list node)]
     (let [this-node (peek path)]
       (if-let [next-node (nexthop this-node)]
         (recur (conj path next-node))
