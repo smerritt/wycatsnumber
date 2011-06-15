@@ -1,7 +1,7 @@
 (ns org.andcheese.wycatsnumber.webapp
   (:use compojure.core
-        ring.adapter.jetty)
-  (:refer org.andcheese.wycatsnumber.util :only (wheel-map))
+        ring.adapter.jetty
+        [org.andcheese.wycatsnumber.util :only (wheel-map)])
   (:require [clj-yaml [core :as yaml]]
             [clojure.contrib [sql :as sql]]
             [org.danlarkin [json :as json]]
