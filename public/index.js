@@ -1,22 +1,61 @@
-var apiBase = "http://localhost:4000";
+var apiBase = "http://localhost:4000";  // XXX
 
 function fetchPath(authorName) {
   $.ajax({
     url: apiBase + "/path/" + authorName + "/wycats",
-    dataType: "jsonp",
-    success: function(data) { pathCallback(data, authorName) }
+    dataType: "json",
+
+    statusCode: {
+      200: function(data) { pathCallback(data, authorName) },
+      404: notFoundCallback,
+      500: error500Callback,
+    }
   });
 }
 
-function notFoundCallback(data) {
-  // writeme
+function error500Callback(data) {
+  copy = $("#templates .error_500").clone();
+  copy.find(".error_description").
+    text("Error 500.");
+  $("#path_results").empty().append(copy);
+}
+
+function notFoundCallback(response) {
+  data = JSON.parse(response.responseText);
+  console.log(data);
+  var author_names = data["unknown-authors"].join(" or ");
+
+  copy = $("#templates .unknown_authors").clone();
+  copy.find(".unknown_author_names").
+    text(author_names);
+
+  $("#path_results").empty();
+  $("#path_results").append(copy);
+}
+
+function projectLink(project) {
+  return $("<a></a>").
+    addClass("project").
+    attr("href", "https://github.com/" + project.name).
+    text(project.name);
+}
+
+function collaboration(author1, project, author2) {
 }
 
 function displayPathComponent(author1, project, author2) {
   $("#path_results").
     append($("<p></p>").
-           addClass("collaboration").
-           text(author1.name + " -> " + project.name + " -> " + author2.name));
+           addClass("result_row").
+           append(util.userWithGravatar(author1).
+                  addClass("left")).
+           append($("<span></span>").
+                  addClass("project").
+                  append("worked on ").
+                  append(projectLink(project)).
+                  append(" with")).
+           append(util.userWithGravatar(author2).
+                  addClass("right")));
 }
 
 function pathCallback(data, authorName) {
@@ -28,7 +67,7 @@ function pathCallback(data, authorName) {
 
 $(document).ready(function() {
   $("#path_form").submit(function(event) {
-    fetchPath($("#username").val());
+    fetchPath($("#username").val().trim());
     return false;
   });
 });

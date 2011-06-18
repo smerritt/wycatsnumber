@@ -1,4 +1,34 @@
+.result {
+    width: 120px;
+    height: 210px;
+
+    padding: 5px;
+    margin: 10px 10px 10px 10px;
+
+    background-color: #DDDDDD;
+}
+
 .result a.username {
     display: block;
     text-align: center;
+}
+
+.result .gravatar {
+    padding: 5px 0 0 0;
+    text-align: center;
+}
+
+p.result_row {
+    float: none;
+    overflow: auto;
+}
+
+p.result_row span.project {
+    width: 450px;
+    float: left;
+    text-align: center;
+}
+
+p.result_row .user_with_picture {
+    float: left;
 }
