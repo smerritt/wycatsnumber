@@ -33,36 +33,40 @@ function notFoundCallback(response) {
   $("#path_results").append(copy);
 }
 
-function projectLink(project) {
-  return $("<a></a>").
-    addClass("project").
-    attr("href", "https://github.com/" + project.name).
+function displayAuthor(author) {
+  copy = $("#templates .author_path_component").clone();
+
+  copy.
+    find("img.gravatar").
+    attr("src", util.gravatar_url(author));
+
+  copy.
+    find("a.username").
+    attr("href", util.author_url(author)).
+    text(author.name);
+
+  $("#path_results").append(copy);
+}
+
+function displayProject(project) {
+  copy = $("#templates .project_path_component").clone();
+
+  copy.
+    find("a.project_link").
+    attr("href", util.project_url(project)).
     text(project.name);
-}
 
-function collaboration(author1, project, author2) {
-}
-
-function displayPathComponent(author1, project, author2) {
-  $("#path_results").
-    append($("<p></p>").
-           addClass("result_row").
-           append(util.userWithGravatar(author1).
-                  addClass("left")).
-           append($("<span></span>").
-                  addClass("project").
-                  append("worked on ").
-                  append(projectLink(project)).
-                  append(" with")).
-           append(util.userWithGravatar(author2).
-                  addClass("right")));
+  $("#path_results").append(copy);
 }
 
 function pathCallback(data, authorName) {
   $("#path_results").empty();
-  for (var i = 0; i < (data.length - 2); i = i + 2) {
-    displayPathComponent(data[i], data[i+1], data[i+2])
-  }
+  $.each(data, function(idx, elem) {
+    if (elem.type == "author")
+      displayAuthor(elem);
+    else if (elem.type == "project")
+      displayProject(elem);
+  })
 }
 
 $(document).ready(function() {
