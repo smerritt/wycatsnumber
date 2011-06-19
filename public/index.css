@@ -1,11 +1,42 @@
-.result {
-    width: 120px;
-    height: 210px;
+#path_results {
+    width: 500px;
+}
 
-    padding: 5px;
-    margin: 10px 10px 10px 10px;
+.path_component {
+    clear: both;
+    word-wrap: break-word;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
 
-    background-color: #DDDDDD;
+.author_path_component {
+    width: 100px;
+    height: 120px;
+}
+
+.project_path_component {
+    height: 75px;
+    width: 350px;
+
+    vertical-align: center;
+}
+
+.project_path_component .project_link {
+    text-align: center;
+    width: 100%;
+    height: 1.5em;
+    line-height: 1.5em;
+    background: #84D1F0;
+    border-radius: 15px;
+}
+
+.project_path_component img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .result a.username {
@@ -13,22 +44,22 @@
     text-align: center;
 }
 
-.result .gravatar {
-    padding: 5px 0 0 0;
+.user_with_picture .gravatar {
+    margin: 5px;
     text-align: center;
 }
 
-p.result_row {
-    float: none;
-    overflow: auto;
+.user_with_picture {
+    padding: 3px 0px 3px 0px;
+    background: #93F5B0;
+    float: left;
+
+    border-radius: 15px;
 }
 
-p.result_row span.project {
-    width: 450px;
-    float: left;
+.user_with_picture a.username {
     text-align: center;
-}
-
-p.result_row .user_with_picture {
-    float: left;
+    width: 100%;
+    display: block;
+    padding: 0 0 5px 0;
 }
