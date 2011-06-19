@@ -1,4 +1,4 @@
-var apiBase = "http://localhost:4000";  // XXX
+var apiBase = "/api";
 
 function fetchPath(authorName) {
   $.ajax({
