@@ -4,6 +4,7 @@
     <script src="jquery.min.js"></script>
     <script src="util.js"></script>
     <script src="index.js"></script>
+    <link href="reset.css" rel="stylesheet" type="text/css" />
     <link href="index.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
@@ -18,8 +19,7 @@
       <div class="author_path_component path_component">
         <div class="user_with_picture">
           <div class="gravatar">
-            <img alt="" src="replace-me-with-gravatar-url"
-            class="gravatar"/>
+            <img alt="" class="gravatar"/>
           </div>
           <div class="username">
             <a class="username"
@@ -30,11 +30,15 @@
       </div>
 
       <div class="project_path_component path_component">
-        <img src="images/downarrow.gif" class="one" />
-        <div class="project_link">
-          worked on <a class="project_link" href="replace-me">replace-me</a> with
+        <div class="arrow_container">
+          <img src="images/downarrow.gif" />
         </div>
-        <img src="images/downarrow.gif" class="two" />
+        <p class="project_link">
+          worked on <a class="project_link" href="replace-me">replace-me</a> with
+        </p>
+        <div class="arrow_container">
+          <img src="images/downarrow.gif" />
+        </div>
       </div>
 
       <div class="unknown_authors">

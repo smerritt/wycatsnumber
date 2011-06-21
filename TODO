@@ -1,2 +1,9 @@
-* validate Collaboration#commits > 0
-* validate Predecession#commits > 0
+* filter out user 'invalid-email-address'; he is not real
+
+* style error messages
+
+* explain wtf a wycats number is and why you might give a crap
+
+* let you find a path between any two people
+
+* allow for filtering by minimum # commits
