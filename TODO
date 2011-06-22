@@ -1,4 +1,4 @@
-* filter out user 'invalid-email-address'; he is not real
+* clean 'invalid-email-address' out of production's DB
 
 * style error messages
 

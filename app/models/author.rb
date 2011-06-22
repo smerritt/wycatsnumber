@@ -3,6 +3,8 @@ class Author
 
   MIN_AGE_FOR_FETCH = 60*60*24*30   # 30 days old
 
+  BLACKLIST = %w[invalid-email-address]
+
   property :id,              Serial
   property :github_username, String,  :required => true, :length => 255, :index => true
   property :gravatar_id,     String
@@ -24,12 +26,18 @@ class Author
   end
 
   def self.create_from_github_user(user)
-    Log.info("creating user #{user.name}")
-    create(:github_username => user.name, :gravatar_id => user.gravatar_id)
+    unless blacklisted?(user)
+      Log.info("creating user #{user.name}")
+      create(:github_username => user.name, :gravatar_id => user.gravatar_id)
+    end
   end
 
   def self.needs_fetch
     all(:fetched_at.lt => Time.now - MIN_AGE_FOR_FETCH)
+  end
+
+  def self.blacklisted?(user)
+    BLACKLIST.include?(user.name)
   end
 
   def needs_fetch?

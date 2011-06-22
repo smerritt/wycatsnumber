@@ -35,7 +35,6 @@ describe 'WalkRepo#perform' do
       )
   end
 
-
   it "creates new authors as it sees them" do
     repo_has_collaborators(%w[alice bob])
     lambda { WalkRepo.perform(@repo) }.should change(Author, :count).by(2)
@@ -74,6 +73,13 @@ describe 'WalkRepo#perform' do
 
     repo_has_collaborators(%w[alice bob])
     lambda { WalkRepo.perform(@repo) }.should change(Author, :count).by(1)
+  end
+
+  it "skips the author 'invalid-email-address'" do
+    repo_has_collaborators(%w[carol invalid-email-address])
+    WalkRepo.perform(@repo)
+
+    Author.first(:github_username => 'invalid-email-address').should be_nil
   end
 
   it "creates the project" do
