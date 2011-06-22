@@ -1,5 +1,20 @@
+/* elements displayed on error */
+h1 {
+    font-size: xx-large;
+    font-weight: bold;
+    padding: 0.5em 0;
+}
+
+h2 {
+    font-size: large;
+    font-weight: bold;
+    padding: 0.5em 0;
+}
+
+/* elements displayed on success */
 #path_results {
     width: 500px;
+    padding: 8px;
 }
 
 .path_component {
