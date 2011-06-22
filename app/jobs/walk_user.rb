@@ -6,7 +6,7 @@ class WalkUser
 
     user = Github::User.new(username)
     author = Author.first(:github_username => username)
-    return unless author.needs_fetch?
+    return unless author && author.needs_fetch?
 
     Log.info "walking user #{username}"
     (user.owned_repos + user.unowned_watched_repos).each do |repo|

@@ -134,4 +134,10 @@ describe 'WalkUser#perform' do
     end.should_not change { @author.reload.fetched_at }
   end
 
+  it "does not crash when the author isn't in the DB" do
+    lambda do
+      WalkUser.perform('mysteryman')
+    end.should_not raise_error
+  end
+
 end
