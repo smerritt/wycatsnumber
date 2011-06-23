@@ -5,6 +5,7 @@ function fetchPath(authorName) {
     url: apiBase + "/path/" + authorName + "/wycats",
     dataType: "json",
 
+    error: errorCallback,
     statusCode: {
       200: function(data) { pathCallback(data, authorName) },
       404: notFoundCallback,
@@ -13,8 +14,15 @@ function fetchPath(authorName) {
   });
 }
 
+function errorCallback(xhr, errorDescription, exception) {
+  copy = $("#templates .error").clone();
+  copy.find(".error_description").
+    text("The network says: \"" + errorDescription + "\".");
+  $("#path_results").empty().append(copy);
+}
+
 function error500Callback(data) {
-  copy = $("#templates .error_500").clone();
+  copy = $("#templates .error").clone();
   copy.find(".error_description").
     text("Error 500.");
   $("#path_results").empty().append(copy);
