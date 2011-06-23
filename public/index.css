@@ -81,6 +81,11 @@ p span.short_desc {
     text-align: center;
 }
 
+img.gravatar {
+    width: 80px;
+    height: 80px;
+}
+
 .user_with_picture {
     padding: 3px 0px 3px 0px;
     background: #93F5B0;
