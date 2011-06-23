@@ -1,3 +1,7 @@
+p {
+    padding: 0.5em 0;
+}
+
 /* elements displayed on error */
 h1 {
     font-size: xx-large;
@@ -6,9 +10,13 @@ h1 {
 }
 
 h2 {
-    font-size: large;
+    font-size: x-large;
     font-weight: bold;
     padding: 0.5em 0;
+}
+
+p span.short_desc {
+    font-weight: bold;
 }
 
 /* elements displayed on success */
