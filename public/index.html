@@ -2,6 +2,7 @@
   <head>
     <title>Find your wycats number</title>
     <script src="jquery.min.js"></script>
+    <script src="jquery.inputHint.js"></script>
     <script src="util.js"></script>
     <script src="index.js"></script>
     <link href="reset.css" rel="stylesheet" type="text/css" />
@@ -143,8 +144,12 @@
     </div>
 
     <form id="path_form">
-      <label for="username">GitHub Username:</label>
-      <input id="username" type="text" />
+      Find a path from 
+      <input id="source" type="text" class="inputHint" title="GitHub username" />
+      to
+      <input id="destination" type="text" value="wycats" />
+
+      <input type="submit" value="Go!" />
     </form>
     <div id="path_results">
     </div>

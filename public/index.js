@@ -1,13 +1,13 @@
-var apiBase = "/api";
+var apiBase = "http://localhost:4000";
 
-function fetchPath(authorName) {
+function fetchPath(source, destination) {
   $.ajax({
-    url: apiBase + "/path/" + authorName + "/wycats",
+    url: apiBase + "/path/" + source + "/" + destination,
     dataType: "json",
 
     error: errorCallback,
     statusCode: {
-      200: function(data) { pathCallback(data, authorName) },
+      200: function(data) { pathCallback(data, source, destination) },
       404: notFoundCallback,
       500: error500Callback,
     }
@@ -67,7 +67,7 @@ function displayProject(project) {
   $("#path_results").append(copy);
 }
 
-function pathCallback(data, authorName) {
+function pathCallback(data, source, destination) {
   $("#path_results").empty();
   $.each(data, function(idx, elem) {
     if (elem.type == "author")
@@ -79,7 +79,10 @@ function pathCallback(data, authorName) {
 
 $(document).ready(function() {
   $("#path_form").submit(function(event) {
-    fetchPath($("#username").val().trim());
+    fetchPath(
+      $("#source").val().trim(),
+      $("#destination").val().trim()
+    );
     return false;
   });
 });
