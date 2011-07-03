@@ -1,4 +1,4 @@
-var apiBase = "http://localhost:4000";
+var apiBase = "/api";
 
 function fetchPath(source, destination) {
   showPane("#path_results");
