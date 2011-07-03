@@ -1,9 +1,5 @@
-* clean 'invalid-email-address' out of production's DB
-
-* explain wtf a wycats number is and why you might give a crap
-
-* let you find a path between any two people
-
 * allow for filtering by minimum # commits
 
 * handle empty path response (disconnected user)
+
+* tell you "Your wycats number is N"

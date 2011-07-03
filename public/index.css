@@ -2,6 +2,38 @@ p {
     padding: 0.5em 0;
 }
 
+/* tab bar */#tabs {
+    width: 700px;
+}
+
+div.tab {
+    float: left;
+    line-height: 1.5em;
+    padding: 0 2em;
+    border-style: solid;
+    border-width: 1px 0 1px 1px;
+    background: #B0B0B0;
+
+    border-radius: 10px 10px 0 0;
+}
+
+div.tab.last {
+    border-width: 1px;
+}
+
+div.tab.selected {
+    background: #FFFFFF;
+    padding-bottom: 1px;
+    border-bottom: 0px;
+}
+
+/* the panes (stuff selected by the tabs) */
+#panes {
+    clear: left;
+    width: 700px;
+    padding: 8px;
+}
+
 /* elements displayed on error */
 h1 {
     font-size: xx-large;
@@ -20,10 +52,6 @@ p span.short_desc {
 }
 
 /* elements displayed on success */
-#path_results {
-    width: 500px;
-    padding: 8px;
-}
 
 .path_component {
     word-wrap: break-word;

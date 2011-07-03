@@ -1,6 +1,9 @@
 var apiBase = "http://localhost:4000";
 
 function fetchPath(source, destination) {
+  showPane("#path_results");
+  $("#path_results").empty().text("Loading...");
+
   $.ajax({
     url: apiBase + "/path/" + source + "/" + destination,
     dataType: "json",
@@ -77,6 +80,16 @@ function pathCallback(data, source, destination) {
   })
 }
 
+function showPane(paneId) {
+  $("div.pane").hide();
+  $(paneId).show();
+
+  var selectedTabId = paneId + "_tab";
+  console.log(selectedTabId);
+  $("div.tab").removeClass("selected");
+  $(selectedTabId).addClass("selected");
+}
+
 $(document).ready(function() {
   $("#path_form").submit(function(event) {
     fetchPath(
@@ -85,4 +98,12 @@ $(document).ready(function() {
     );
     return false;
   });
+
+  $("div.tab").click(function(event) {
+    var myId = $(this).attr("id");
+    var paneId = myId.substr(0, myId.length - 4);  // chop off the "_tab"
+    showPane("#" + paneId);
+  })
+
+  showPane('#path_finder');
 });
