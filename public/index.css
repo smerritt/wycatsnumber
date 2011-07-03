@@ -2,7 +2,12 @@ p {
     padding: 0.5em 0;
 }
 
-/* tab bar */#tabs {
+dt {
+    margin: 1em;
+}
+
+/* tab bar */
+#tabs {
     width: 700px;
 }
 
