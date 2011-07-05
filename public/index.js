@@ -88,17 +88,35 @@ function displayNumber(sourceAuthor, destinationAuthor, number) {
   $("#path_results").append(copy);
 }
 
+function displayDisconnected(source, destination) {
+  copy = $("#templates div.disconnected").clone();
+
+  copy.
+    find("span.source").
+    text(source);
+
+  copy.
+    find("span.destination").
+    text(destination);
+
+  $("#path_results").append(copy);
+}
+
 function pathCallback(data, source, destination) {
   $("#path_results").empty();
 
-  displayNumber(source, destination, (data.length - 1) / 2);
+  if (data.length == 0) {
+    displayDisconnected(source, destination);
+  } else {
+    displayNumber(source, destination, (data.length - 1) / 2);
 
-  $.each(data, function(idx, elem) {
-    if (elem.type == "author")
-      displayAuthor(elem);
-    else if (elem.type == "project")
-      displayProject(elem);
-  })
+    $.each(data, function(idx, elem) {
+      if (elem.type == "author")
+        displayAuthor(elem);
+      else if (elem.type == "project")
+        displayProject(elem);
+    });
+  }
 }
 
 function showPane(paneId) {
