@@ -141,5 +141,7 @@ $(document).ready(function() {
     showPane("#" + paneId);
   })
 
+  $("#source").Watermark("GitHub username");
+
   showPane('#path_finder');
 });
