@@ -1,7 +1,6 @@
 var apiBase = "/api";
 
 function fetchPath(source, destination) {
-  showPane("#path_results");
   $("#path_results").empty().text("Loading...");
 
   $.ajax({
@@ -33,7 +32,6 @@ function error500Callback(data) {
 
 function notFoundCallback(response) {
   data = JSON.parse(response.responseText);
-  console.log(data);
   var author_names = data["unknown-authors"].join(" or ");
 
   copy = $("#templates .unknown_authors").clone();
@@ -124,7 +122,6 @@ function showPane(paneId) {
   $(paneId).show();
 
   var selectedTabId = paneId + "_tab";
-  console.log(selectedTabId);
   $("div.tab").removeClass("selected");
   $(selectedTabId).addClass("selected");
 }

@@ -11,6 +11,10 @@ dt {
     width: 700px;
 }
 
+#tabs div:last-child {
+    border-width: 1px;
+}
+
 div.tab {
     float: left;
     line-height: 1.5em;
@@ -20,10 +24,6 @@ div.tab {
     background: #F7E17C;
 
     border-radius: 10px 10px 0 0;
-}
-
-div.tab.last {
-    border-width: 1px;
 }
 
 div.tab.selected {
@@ -94,6 +94,7 @@ p.your_number {
 
 .project_path_component p.project_link {
     padding: 0 3em;
+    margin: 0;
 }
 
 .project_path_component {
