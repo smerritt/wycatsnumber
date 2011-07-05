@@ -70,8 +70,29 @@ function displayProject(project) {
   $("#path_results").append(copy);
 }
 
+function displayNumber(sourceAuthor, destinationAuthor, number) {
+  copy = $("#templates div.your_number").clone();
+
+  copy.
+    find("span.source").
+    text(sourceAuthor);
+
+  copy.
+    find("span.destination").
+    text(destinationAuthor);
+
+  copy.
+    find("span.the_number").
+    text(number);
+
+  $("#path_results").append(copy);
+}
+
 function pathCallback(data, source, destination) {
   $("#path_results").empty();
+
+  displayNumber(source, destination, (data.length - 1) / 2);
+
   $.each(data, function(idx, elem) {
     if (elem.type == "author")
       displayAuthor(elem);

@@ -1,5 +1,3 @@
 * allow for filtering by minimum # commits
 
 * handle empty path response (disconnected user)
-
-* tell you "Your wycats number is N"

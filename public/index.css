@@ -60,6 +60,12 @@ p span.short_desc {
 
 /* elements displayed on success */
 
+p.your_number {
+    font-size: large;
+    padding: 0.5em;
+    background: #93F5B0;
+}
+
 .path_component {
     word-wrap: break-word;
     display: block;
