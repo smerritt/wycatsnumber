@@ -1,7 +1,7 @@
 var apiBase = "/api";
 
 function fetchPath(source, destination) {
-  $("#path_results").empty().text("Loading...");
+  $("span.loading").show();
 
   $.ajax({
     url: apiBase + "/path/" + source + "/" + destination,
@@ -101,7 +101,7 @@ function displayDisconnected(source, destination) {
 }
 
 function pathCallback(data, source, destination) {
-  $("#path_results").empty();
+  $("span.loading").hide();
 
   if (data.length == 0) {
     displayDisconnected(source, destination);
@@ -144,4 +144,6 @@ $(document).ready(function() {
   $("#source").Watermark("GitHub username");
 
   showPane('#path_finder');
+
+  fetchPath("derwiki", "wycats");
 });
