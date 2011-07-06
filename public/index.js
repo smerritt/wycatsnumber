@@ -1,7 +1,7 @@
 var apiBase = "/api";
 
 function fetchPath(source, destination) {
-  $("span.loading").show();
+  $("#content").empty().append("Loading...");
 
   $.ajax({
     url: apiBase + "/path/" + source + "/" + destination,
@@ -101,7 +101,7 @@ function displayDisconnected(source, destination) {
 }
 
 function pathCallback(data, source, destination) {
-  $("span.loading").hide();
+  $("#content").empty();
 
   if (data.length == 0) {
     displayDisconnected(source, destination);
