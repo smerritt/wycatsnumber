@@ -47,11 +47,11 @@ a {
     text-decoration: none;
 }
 
-#path_results {
+#content {
     background: #FFFFFF;
 }
 
-#path_results a:hover {
+#content a:hover {
     color: #000000;
 }
 
