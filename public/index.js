@@ -1,7 +1,7 @@
 var apiBase = "/api";
 
 function fetchPath(source, destination) {
-  $("#path_results").empty().text("Loading...");
+  $("#content").empty().append("Loading...");
 
   $.ajax({
     url: apiBase + "/path/" + source + "/" + destination,
@@ -20,14 +20,14 @@ function errorCallback(xhr, errorDescription, exception) {
   copy = $("#templates .error").clone();
   copy.find(".error_description").
     text("The network says: \"" + errorDescription + "\".");
-  $("#path_results").empty().append(copy);
+  $("#content").empty().append(copy);
 }
 
 function error500Callback(data) {
   copy = $("#templates .error").clone();
   copy.find(".error_description").
     text("Error 500.");
-  $("#path_results").empty().append(copy);
+  $("#content").empty().append(copy);
 }
 
 function notFoundCallback(response) {
@@ -38,8 +38,8 @@ function notFoundCallback(response) {
   copy.find(".unknown_author_names").
     text(author_names);
 
-  $("#path_results").empty();
-  $("#path_results").append(copy);
+  $("#content").empty();
+  $("#content").append(copy);
 }
 
 function displayAuthor(author) {
@@ -54,7 +54,7 @@ function displayAuthor(author) {
     attr("href", util.author_url(author)).
     text(author.name);
 
-  $("#path_results").append(copy);
+  $("#content").append(copy);
 }
 
 function displayProject(project) {
@@ -65,7 +65,7 @@ function displayProject(project) {
     attr("href", util.project_url(project)).
     text(project.name);
 
-  $("#path_results").append(copy);
+  $("#content").append(copy);
 }
 
 function displayNumber(sourceAuthor, destinationAuthor, number) {
@@ -83,7 +83,7 @@ function displayNumber(sourceAuthor, destinationAuthor, number) {
     find("span.the_number").
     text(number);
 
-  $("#path_results").append(copy);
+  $("#content").append(copy);
 }
 
 function displayDisconnected(source, destination) {
@@ -97,11 +97,11 @@ function displayDisconnected(source, destination) {
     find("span.destination").
     text(destination);
 
-  $("#path_results").append(copy);
+  $("#content").append(copy);
 }
 
 function pathCallback(data, source, destination) {
-  $("#path_results").empty();
+  $("#content").empty();
 
   if (data.length == 0) {
     displayDisconnected(source, destination);
