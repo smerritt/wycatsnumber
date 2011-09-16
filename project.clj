@@ -13,4 +13,4 @@
                      [lein-ring "0.4.3"]]
   :ring {:handler org.andcheese.wycatsnumber.webapp/api-routes
          :init org.andcheese.wycatsnumber.webapp/init-world}
-  :jvm-opts ["-Xmx384m"])
+  :jvm-opts ["-Xmx450m"])
